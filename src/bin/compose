@@ -1,8 +1,8 @@
 #!/bin/bash
 # Путь к директории с Dockerfile и конфигурациями
-docker_path="./vendor/beeralex/compose/_docker"
+docker_path="./vendor/beeralex/compose/src/_docker"
 output_file="./docker-compose.yml"
-partials_path="./vendor/beeralex/compose/partials"
+partials_path="./vendor/beeralex/compose/src/partials"
 install_node="false"
 site_path="./"
 export USERGROUP=${USERGROUP:-$(id -g)}
