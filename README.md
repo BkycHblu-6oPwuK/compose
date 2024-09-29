@@ -1,6 +1,8 @@
 # Bitrix docker-compose
 
-Настроенная обертка над docker-compose для проектов bitrix
+Настроенная обертка над docker-compose для проектов bitrix 
+
+nginx + php (7.4, 8.2) + mysql (5.7, 8.0) + node 20 версии
 
 Установка:
 
