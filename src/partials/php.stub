@@ -6,7 +6,7 @@
         USERGROUP: '${USERGROUP}'
     volumes:
       - ${site_path}:/var/www
-      - ~/.ssh:/root/.ssh
+      #- ~/.ssh:/root/.ssh
       - ${docker_path}/app/php-${php_version}/php.ini:/usr/local/etc/php/conf.d/php.ini
       - ${docker_path}/app/php-${php_version}/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
     ports:
