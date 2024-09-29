@@ -51,7 +51,6 @@ choose_mysql_version() {
 
 # Функция для создания docker-compose.yml из частей
 create_docker_compose() {
-  echo $install_node
   # Начало файла docker-compose.yml
   echo "version: '3'" > $output_file
   echo "" >> $output_file
@@ -165,14 +164,12 @@ case $1 in
     publish_docker_files
     ;;
   php)
-    echo $@
     docker-compose run --rm app $@
     ;;
   composer)
     docker-compose run --rm app $@
     ;;
   npm)
-    echo $@
     if [ "$1" = "npm" ] && [ "$2" = "run" ] && [ "$3" = "dev" ]; then
       docker-compose exec node npm run dev
     else
