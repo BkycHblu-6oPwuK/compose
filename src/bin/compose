@@ -1,5 +1,4 @@
 #!/bin/bash
-# Путь к директории с Dockerfile и конфигурациями
 docker_path="./vendor/beeralex/compose/src/_docker"
 output_file="./docker-compose.yml"
 partials_path="./vendor/beeralex/compose/src/partials"
@@ -7,7 +6,6 @@ install_node="false"
 site_path="./"
 export USERGROUP=${USERGROUP:-$(id -g)}
 
-# Функция для выбора версии PHP
 choose_php_version() {
   echo "Выберите версию PHP:"
   echo "1) PHP 7.4"
@@ -28,7 +26,6 @@ choose_php_version() {
   esac
 }
 
-# Функция для выбора версии MySQL
 choose_mysql_version() {
   echo "Выберите версию MySQL:"
   echo "1) MySQL 5.7"
@@ -49,24 +46,20 @@ choose_mysql_version() {
   esac
 }
 
-# Функция для создания docker-compose.yml из частей
+
 create_docker_compose() {
-  # Начало файла docker-compose.yml
   echo "version: '3'" > $output_file
   echo "" >> $output_file
   echo "services:" >> $output_file
 
-  # Добавляем nginx часть
   sed "s|\${docker_path}|${docker_path}|g; s|\${site_path}|${site_path}|g" \
     "${partials_path}/nginx.stub" >> $output_file
   echo "" >> $output_file
 
-  # Добавляем php часть
   sed "s|\${docker_path}|${docker_path}|g; s|\${php_version}|${php_version}|g; s|\${site_path}|${site_path}|g" \
     "${partials_path}/php.stub" >> $output_file
   echo "" >> $output_file
 
-  # Добавляем mysql часть
   sed "s|\${docker_path}|${docker_path}|g; s|\${mysql_version}|${mysql_version}|g; s|\${site_path}|${site_path}|g" \
     "${partials_path}/mysql.stub" >> $output_file
 
@@ -113,9 +106,7 @@ choose_node_js() {
   esac
 }
 
-# Функция для публикации Docker конфигураций
 publish_docker_files() {
-  # Копируем директорию _docker в корень сайта
   if [ -d "${site_path}_docker" ]; then
     echo "Директория ${site_path}_docker уже существует. Удаляем..."
     rm -rf ${site_path}_docker
@@ -124,13 +115,11 @@ publish_docker_files() {
   echo "Переносим ${docker_path} в ${site_path}_docker..."
   cp -r "${docker_path}" ${site_path}_docker
 
-  # Проверка на существование файла и обновление или создание
   if [ -f "$output_file" ]; then
     echo "Файл $output_file уже существует. Обновляем путь..."
     sed -i "s|${docker_path}|${site_path}_docker|g" "$output_file"
     echo "Путь в $output_file обновлен на ${site_path}_docker."
   else
-    # Обновляем путь docker_path
     docker_path="${site_path}_docker"
     echo "docker_path обновлен на ${docker_path}"
     echo "Файл $output_file не найден. Генерируем новый файл."
@@ -149,7 +138,6 @@ set_site_path() {
   fi
 }
 
-# Обработка аргументов командной строки
 case $1 in
   install)
     echo "Запускаем установку..."
