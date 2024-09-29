@@ -1,0 +1,27 @@
+  app:
+    build:
+      context: .
+      dockerfile: ${docker_path}/app/php-${php_version}/Dockerfile
+      args:
+        USERGROUP: '${USERGROUP}'
+    volumes:
+      - ${site_path}:/var/www
+      - ~/.ssh:/root/.ssh
+      - ${docker_path}/app/php-${php_version}/php.ini:/usr/local/etc/php/conf.d/php.ini
+      - ${docker_path}/app/php-${php_version}/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+    ports:
+      - "9000:9000"
+    user: appuser
+    depends_on:
+      - mysql
+    environment:
+        DOCKER_PATH: ${docker_path}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    #    PHP_IDE_CONFIG: 'serverName=xdebugServer'
+    #    XDEBUG_TRIGGER: testTrig
+    # secrets:
+    #   - host_ssh_key
+    networks:
+      - compose
+    container_name: app

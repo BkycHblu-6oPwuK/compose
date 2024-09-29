@@ -1,0 +1,19 @@
+  node:
+    build:
+      context: .
+      dockerfile: ${docker_path}/node/Dockerfile
+      args:
+        USERGROUP: '${USERGROUP}'
+        NODE_VERSION: '20'
+        NODE_PATH: '/var/www/${path_node_root}'
+    volumes:
+      - ${site_path}:/var/www
+    user: nodeuser
+    ports:
+      - "5173:5173"
+    depends_on:
+      - app
+    networks:
+      - compose
+    command: tail -f /dev/null
+    container_name: node

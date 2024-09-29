@@ -1,0 +1,185 @@
+#!/bin/bash
+# Путь к директории с Dockerfile и конфигурациями
+docker_path="./vendor/beeralex/compose/_docker"
+output_file="./docker-compose.yml"
+partials_path="./vendor/beeralex/compose/partials"
+install_node="false"
+site_path="./"
+export USERGROUP=${USERGROUP:-$(id -g)}
+
+# Функция для выбора версии PHP
+choose_php_version() {
+  echo "Выберите версию PHP:"
+  echo "1) PHP 7.4"
+  echo "2) PHP 8.2"
+  read -p "Введите номер версии (1 или 2): " php_version_choice
+
+  case $php_version_choice in
+    1)
+      php_version="7.4"
+      ;;
+    2)
+      php_version="8.2"
+      ;;
+    *)
+      echo "Неправильный выбор. Попробуйте снова."
+      choose_php_version
+      ;;
+  esac
+}
+
+# Функция для выбора версии MySQL
+choose_mysql_version() {
+  echo "Выберите версию MySQL:"
+  echo "1) MySQL 5.7"
+  echo "2) MySQL 8.0"
+  read -p "Введите номер версии (1 или 2): " mysql_version_choice
+
+  case $mysql_version_choice in
+    1)
+      mysql_version="5.7"
+      ;;
+    2)
+      mysql_version="8.0"
+      ;;
+    *)
+      echo "Неправильный выбор. Попробуйте снова."
+      choose_mysql_version
+      ;;
+  esac
+}
+
+# Функция для создания docker-compose.yml из частей
+create_docker_compose() {
+  echo $install_node
+  # Начало файла docker-compose.yml
+  echo "version: '3'" > $output_file
+  echo "" >> $output_file
+  echo "services:" >> $output_file
+
+  # Добавляем nginx часть
+  sed "s|\${docker_path}|${docker_path}|g; s|\${site_path}|${site_path}|g" \
+    "${partials_path}/nginx.stub" >> $output_file
+  echo "" >> $output_file
+
+  # Добавляем php часть
+  sed "s|\${docker_path}|${docker_path}|g; s|\${php_version}|${php_version}|g; s|\${site_path}|${site_path}|g" \
+    "${partials_path}/php.stub" >> $output_file
+  echo "" >> $output_file
+
+  # Добавляем mysql часть
+  sed "s|\${docker_path}|${docker_path}|g; s|\${mysql_version}|${mysql_version}|g; s|\${site_path}|${site_path}|g" \
+    "${partials_path}/mysql.stub" >> $output_file
+
+  if [ "$install_node" = "true" ]; then
+    echo "" >> $output_file
+      sed "s|\${docker_path}|${docker_path}|g; s|\${path_node_root}|${path_node_root}|g; s|\${site_path}|${site_path}|g" \
+    "${partials_path}/node.stub" >> $output_file
+  fi
+
+  echo "" >> $output_file
+  echo "networks:" >> $output_file
+  echo "  compose:" >> $output_file
+  echo "    driver: bridge" >> $output_file
+  echo "volumes:" >> $output_file
+  echo "  mysql_data:" >> $output_file
+  echo "#secrets:" >> $output_file
+  echo "#  host_ssh_key:" >> $output_file
+  echo "#    file: ~/.ssh/file.ppk" >> $output_file
+
+  echo "docker-compose.yml создан с PHP ${php_version} и MySQL ${mysql_version} в текущей директории."
+}
+
+choose_node_js() {
+  read -p "Устанавливать ли node js? (Y или N): " available_node_js
+  case $available_node_js in
+    Y)
+      install_node=true
+      echo "Введите путь до директории с package.json относительно директории сайта"
+      read -p "например (local/js/vite или пустая строка): " path_node_root
+      if [ ! -z "$path_node_root" ]; then
+        if [ ! -d "$site_path$path_node_root" ]; then
+          echo "Директория /var/www/$path_node_root не существует. Создаю..."
+          mkdir -p "$site_path$path_node_root"
+          echo "Директория создана."
+        fi
+      fi
+      ;;
+    N)
+      ;;
+    *)
+      echo "Неправильный выбор. Попробуйте снова."
+      choose_node_js
+      ;;
+  esac
+}
+
+# Функция для публикации Docker конфигураций
+publish_docker_files() {
+  # Копируем директорию _docker в корень сайта
+  if [ -d "${site_path}_docker" ]; then
+    echo "Директория ${site_path}_docker уже существует. Удаляем..."
+    rm -rf ${site_path}_docker
+  fi
+
+  echo "Переносим ${docker_path} в ${site_path}_docker..."
+  cp -r "${docker_path}" ${site_path}_docker
+
+  # Проверка на существование файла и обновление или создание
+  if [ -f "$output_file" ]; then
+    echo "Файл $output_file уже существует. Обновляем путь..."
+    sed -i "s|${docker_path}|${site_path}_docker|g" "$output_file"
+    echo "Путь в $output_file обновлен на ${site_path}_docker."
+  else
+    # Обновляем путь docker_path
+    docker_path="${site_path}_docker"
+    echo "docker_path обновлен на ${docker_path}"
+    echo "Файл $output_file не найден. Генерируем новый файл."
+    set_site_path
+    choose_php_version
+    choose_mysql_version
+    choose_node_js
+    create_docker_compose
+  fi
+}
+
+set_site_path() {
+  read -p "Введите путь до директории сайта (./bitrix/ или пустая строка - текущая директория): " site_path
+  if [ ${#site_path} -eq 0 ]; then
+    site_path="./"
+  fi
+}
+
+# Обработка аргументов командной строки
+case $1 in
+  install)
+    echo "Запускаем установку..."
+    set_site_path
+    choose_php_version
+    choose_mysql_version
+    choose_node_js
+    create_docker_compose
+    ;;
+  publish)
+    echo "Запускаем публикацию Docker конфигураций..."
+    publish_docker_files
+    ;;
+  php)
+    echo $@
+    docker-compose run --rm app $@
+    ;;
+  composer)
+    docker-compose run --rm app $@
+    ;;
+  npm)
+    echo $@
+    if [ "$1" = "npm" ] && [ "$2" = "run" ] && [ "$3" = "dev" ]; then
+      docker-compose exec node npm run dev
+    else
+      docker-compose run --rm node "$@"
+    fi
+    ;;
+  *)
+    docker-compose "$@"
+    ;;
+esac

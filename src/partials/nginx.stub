@@ -1,0 +1,12 @@
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ${site_path}:/var/www
+      - ${docker_path}/nginx/conf.d/:/etc/nginx/conf.d
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+    networks:
+      - compose
+    container_name: nginx
