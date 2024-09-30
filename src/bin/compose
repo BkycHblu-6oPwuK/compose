@@ -3,7 +3,7 @@
 docker_path="./vendor/beeralex/compose/src/_docker"
 output_file="./docker-compose.yml"
 partials_path="./vendor/beeralex/compose/src/partials"
-install_node="false"
+install_node="N"
 site_path="./"
 export USERGROUP=${USERGROUP:-$(id -g)}
 
@@ -49,7 +49,7 @@ choose_mysql_version() {
 
 
 create_docker_compose() {
-  echo "version: '3'" > $output_file
+  echo "version: '3.8'" > $output_file
   echo "" >> $output_file
   echo "services:" >> $output_file
 
@@ -64,7 +64,7 @@ create_docker_compose() {
   sed "s|\${docker_path}|${docker_path}|g; s|\${mysql_version}|${mysql_version}|g; s|\${site_path}|${site_path}|g" \
     "${partials_path}/mysql.stub" >> $output_file
 
-  if [ "$install_node" = "true" ]; then
+  if [ "$install_node" = "Y" ]; then
     echo "" >> $output_file
       sed "s|\${docker_path}|${docker_path}|g; s|\${path_node_root}|${path_node_root}|g; s|\${site_path}|${site_path}|g" \
     "${partials_path}/node.stub" >> $output_file
@@ -87,7 +87,7 @@ choose_node_js() {
   read -p "Устанавливать ли node js? (Y или N): " available_node_js
   case $available_node_js in
     Y)
-      install_node=true
+      install_node=Y
       echo "Введите путь до директории с package.json относительно директории сайта"
       read -p "например (local/js/vite или пустая строка): " path_node_root
       if [ ! -z "$path_node_root" ]; then
@@ -108,21 +108,20 @@ choose_node_js() {
 }
 
 publish_docker_files() {
-  if [ -d "${site_path}_docker" ]; then
-    echo "Директория ${site_path}_docker уже существует. Удаляем..."
-    rm -rf ${site_path}_docker
+  if [ -d "./_docker" ]; then
+    echo "Директория ./_docker уже существует. Удаляем..."
+    rm -rf ./_docker
   fi
 
-  echo "Переносим ${docker_path} в ${site_path}_docker..."
+  echo "Переносим ${docker_path} в ./_docker..."
   cp -r "${docker_path}" ${site_path}_docker
 
   if [ -f "$output_file" ]; then
     echo "Файл $output_file уже существует. Обновляем путь..."
-    sed -i "s|${docker_path}|${site_path}_docker|g" "$output_file"
+    sed -i "s|${docker_path}|./_docker|g" "$output_file"
     echo "Путь в $output_file обновлен на ${site_path}_docker."
   else
-    docker_path="${site_path}_docker"
-    echo "docker_path обновлен на ${docker_path}"
+    docker_path="./_docker"
     echo "Файл $output_file не найден. Генерируем новый файл."
     set_site_path
     choose_php_version
@@ -133,9 +132,19 @@ publish_docker_files() {
 }
 
 set_site_path() {
-  read -p "Введите путь до директории сайта (./bitrix/ или пустая строка - текущая директория): " site_path
+  read -p "Введите путь до директории сайта (site или пустая строка - текущая директория): " site_path
   if [ ${#site_path} -eq 0 ]; then
     site_path="./"
+  else
+    if [[ "${site_path}" != ./* ]]; then
+      site_path="./${site_path}"
+    fi
+    if [[ "${site_path}" != */ ]]; then
+      site_path="${site_path}/"
+    fi
+    if [ ! -d "$site_path" ]; then
+      mkdir -p "$site_path"
+    fi
   fi
 }
 
