@@ -1,4 +1,5 @@
 #!/bin/bash
+
 docker_path="./vendor/beeralex/compose/src/_docker"
 output_file="./docker-compose.yml"
 partials_path="./vendor/beeralex/compose/src/partials"
