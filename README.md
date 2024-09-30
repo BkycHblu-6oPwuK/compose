@@ -81,3 +81,10 @@ compose up -d
 compose down
 compose build
 ```
+
+## Возможные проблемы
+
+- `bash: compose: Permission denied` - выполнить команду
+```bash
+chmod +x ./vendor/beeralex/compose/src/bin/compose
+```
