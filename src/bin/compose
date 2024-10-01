@@ -162,17 +162,13 @@ case $1 in
     publish_docker_files
     ;;
   php)
-    docker-compose run --rm app $@
+    docker-compose exec -it --user appuser app $@
     ;;
   composer)
-    docker-compose run --rm app $@
+    docker-compose exec -it --user appuser app $@
     ;;
   npm)
-    if [ "$1" = "npm" ] && [ "$2" = "run" ] && [ "$3" = "dev" ]; then
-      docker-compose exec node npm run dev
-    else
-      docker-compose run --rm node "$@"
-    fi
+    docker-compose exec -it --user nodeuser node "$@"
     ;;
   *)
     docker-compose "$@"

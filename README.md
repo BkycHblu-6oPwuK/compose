@@ -53,6 +53,30 @@ compose publish
 
 Эта команда перенесет всю конфигурацию в корень сайта (директория _docker) и изменит пути до файлов в docker-compose.yml, т.к. теперь все будет браться из ./_docker
 
+## Пользователи в контейнерах
+
+- `appuser` - в контейнере с php (service app)
+- `nodeuser` - в контейнере с node js (service node)
+
+## Настройка cron
+
+По умолчанию установка cron выключена. Для включания выполните опубликуйте докерфайлы и файлы конфигурации если еще этого не делали
+
+```bash
+compose publish
+```
+
+Перейдите в "_docker/app/php-{your-version}/Dockerfile" и раскомментируйте строки начинающиеся с - "#cron"
+
+Запись заданий осуществляйте в "_docker/app/crontab.txt"
+
+выполните команду
+
+```bash
+compose build
+```
+и запустите контейнеры, cron должен начать работать
+
 ## Описание всех доступных команд
 
 - `install` - Создание docker-compose.yml в текущей директории
@@ -69,7 +93,7 @@ compose php -v
 ```
 - `composer` - Выполнение команды composer в контейнере с php
 ```bash
-compose php -v
+compose composer install
 ```
 - `npm` - Выполнение команды npm в контейнере с node js если он был установлен ()
 ```bash
@@ -87,4 +111,8 @@ compose build
 - `bash: compose: Permission denied` - выполнить команду
 ```bash
 chmod +x ./vendor/beeralex/compose/src/bin/compose
+```
+- `compose: not found или compose: /bin/bash^M: bad interpreter` - выполнить команду
+```bash
+sed -i 's/\r$//' ./vendor/beeralex/compose/src/bin/compose
 ```

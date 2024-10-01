@@ -4,6 +4,7 @@
       dockerfile: ${docker_path}/app/php-${php_version}/Dockerfile
       args:
         USERGROUP: '${USERGROUP}'
+        DOCKER_PATH: ${docker_path}
     volumes:
       - ${site_path}:/var/www
       #- ~/.ssh:/root/.ssh
@@ -11,7 +12,6 @@
       - ${docker_path}/app/php-${php_version}/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
     ports:
       - "9000:9000"
-    user: appuser
     depends_on:
       - mysql
     environment:

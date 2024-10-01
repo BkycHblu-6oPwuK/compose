@@ -8,7 +8,6 @@
         NODE_PATH: '/var/www/${path_node_root}'
     volumes:
       - ${site_path}:/var/www
-    user: nodeuser
     ports:
       - "5173:5173"
     depends_on:
