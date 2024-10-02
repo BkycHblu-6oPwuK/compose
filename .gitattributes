@@ -1,1 +1,2 @@
 src/bin/* text eol=lf
+src/_docker/bin/* text eol=lf
