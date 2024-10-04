@@ -98,6 +98,27 @@ compose build
 ```
 и запустите контейнеры, cron должен начать работать
 
+## Туннелирование локального сайта
+
+Для туннелирования используется Expose (https://github.com/beyondcode/expose) и для того чтобы поделить вашим локальным сайтом выполните команду:
+
+```bash
+compose share
+```
+
+Сайт будет доступен 1 час, после этого команду можно выполнить заново.
+
+доступные флаги expose для проброса через команду share:
+
+- `--auth`
+- `--server`
+- `--subdomain`
+- `--domain`
+- `--server-host`
+- `--server-port`
+
+Документация expose - https://expose.dev/docs/introduction
+
 ## Описание всех доступных команд
 
 - `install` - Создание docker-compose.yml в текущей директории

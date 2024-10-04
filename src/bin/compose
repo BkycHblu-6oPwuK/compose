@@ -170,6 +170,29 @@ case $1 in
   npm)
     docker-compose exec -it --user nodeuser node "$@"
     ;;
+  share)
+    shift
+    docker_cmd="docker run --init --rm -p "4040":4040 -t beyondcodegmbh/expose-server:latest share http://host.docker.internal:80"
+    while [[ "$#" -gt 0 ]]; do
+        case $1 in
+            --auth) auth="$2"; shift ;;
+            --server) server="$2"; shift ;;
+            --subdomain) subdomain="$2"; shift ;;
+            --domain) domain="$2"; shift ;;
+            --server-host) server_host="$2"; shift ;;
+            --server-port) server_port="$2"; shift ;;
+            *) echo "Unknown parameter passed: $1"; exit 1 ;;
+        esac
+        shift
+    done
+    docker_cmd+=" --auth=\"${auth:-e17105f7-e499-470a-bd5b-05c0a579036f}\""
+    [ -n "$server_host" ] && docker_cmd+=" --server-host=\"$server_host\""
+    [ -n "$server_port" ] && docker_cmd+=" --server-port=\"$server_port\""
+    [ -n "$server" ] && docker_cmd+=" --server=\"$server\""
+    [ -n "$subdomain" ] && docker_cmd+=" --subdomain=\"$subdomain\""
+    [ -n "$domain" ] && docker_cmd+=" --domain=\"$domain\""
+    eval $docker_cmd
+    ;;
   *)
     docker-compose "$@"
     ;;
