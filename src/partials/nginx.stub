@@ -4,6 +4,7 @@
       dockerfile: ${docker_path}/nginx/Dockerfile
       args:
         USERGROUP: '${USERGROUP}'
+        DOCKER_PATH: ${docker_path}
     volumes:
       - ${site_path}:/var/www
       - ${docker_path}/nginx/conf.d/:/etc/nginx/conf.d

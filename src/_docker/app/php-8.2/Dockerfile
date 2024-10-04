@@ -28,16 +28,26 @@ RUN curl -sS https://getcomposer.org/installer | php -- \
     --filename=composer \
     --install-dir=/usr/local/bin
 
+COPY ${DOCKER_PATH}/nginx/certs/fullchainloc.pem /usr/local/share/ca-certificates/
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    wget \
+    && update-ca-certificates
+
+RUN apt-get update && apt-get install -y \
+    postfix
+
 #cron RUN apt-get update && apt-get install -y \
 #cron     cron \
 #cron     supervisor
-    
+
 #cron COPY ${DOCKER_PATH}/app/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 #cron COPY ${DOCKER_PATH}/app/crontab.txt /etc/cron.d/my-crontab
 #cron RUN chmod 0644 /etc/cron.d/my-crontab
 #cron RUN echo "" >> /etc/cron.d/my-crontab && crontab /etc/cron.d/my-crontab
 #cron RUN touch /var/log/cron.log
 #cron COPY ${DOCKER_PATH}/bin/app_entrypoint.sh /usr/local/bin/entrypoint.sh
+#cron RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh
 #cron RUN chmod +x /usr/local/bin/entrypoint.sh
 
 #imagick RUN pecl install imagick && docker-php-ext-enable imagick
@@ -49,6 +59,11 @@ RUN groupadd --force -g $USERGROUP appuser
 RUN useradd -ms /bin/bash --no-user-group -g $USERGROUP -u $USERGROUP appuser
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN apt-get update && apt-get install -y nginx
+
+#можно закомментировать если используется cron
+CMD service nginx start && php-fpm 
 
 WORKDIR /var/www
 

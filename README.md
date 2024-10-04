@@ -68,6 +68,12 @@ openssl req -x509 -nodes -days 9999 -newkey rsa:2048 -keyout privkey.pem -out fu
 
 Так как пакет расчитан для локальной разработки, здесь не будет рассматриваться letscrypt
 
+## Работа с сокетами
+
+Для работы с сокетами в php кентейнер был установлен nginx который проксирует запросы на контейнер nginx.
+
+nginx.conf для контейнера php лежит в _docker/app/nginx.conf
+
 ## Пользователи в контейнерах
 
 - `appuser` - в контейнере с php (service app)
