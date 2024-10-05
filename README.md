@@ -39,6 +39,7 @@ compose install
 3. Выбрать версию mysql - 5.7 или 8.0
 4. Устанавливать ли node.js - Y или N, если установите Y, то будет создан сервис с node js 20 версии
     1. Если будет устанавливаться node.js, то нужно указать корневую директорию для него, то есть директория содержащая файл package.json. Путь указывается относительно корня сайта - local/js/vite или пустое поле если package.json в корне сайта.
+5. Устанавливать ли sphinx - Y или N, если установите Y, то будет создан сервис с shphinx версии 2.2.11
 
 
 После этого в директории где выполнялась команда появиться docker-compose.yml файл с настроенными сервисами.
@@ -73,11 +74,6 @@ openssl req -x509 -nodes -days 9999 -newkey rsa:2048 -keyout privkey.pem -out fu
 Для работы с сокетами в php кентейнер был установлен nginx который проксирует запросы на контейнер nginx.
 
 nginx.conf для контейнера php лежит в _docker/app/nginx.conf
-
-## Пользователи в контейнерах
-
-- `appuser` - в контейнере с php (service app)
-- `nodeuser` - в контейнере с node js (service node)
 
 ## Настройка cron
 
@@ -121,9 +117,9 @@ compose share
 
 ## Sphinx (поисковая система)
 
-sphinx является сервисом в docker-compose.yml (добавляется при установке) и собирается на основе Dockerfile из _docker/sphinx/Dockerfile, где так же лежит и файл конфигурации sphinx.conf.
+sphinx (версия 2.2.11) является сервисом в docker-compose.yml (добавляется при установке) и собирается на основе Dockerfile из _docker/sphinx/Dockerfile, где так же лежит и файл конфигурации sphinx.conf.
 
-После запуска контейнеров можно подключать к sphinx:
+После запуска контейнеров можно подключаться к sphinx:
 
 ```
 sphinx:9306 - протокол MySql
@@ -176,6 +172,11 @@ compose up -d
 compose down
 compose build
 ```
+
+## Пользователи в контейнерах
+
+- `appuser` - в контейнере с php (service app)
+- `nodeuser` - в контейнере с node js (service node)
 
 ## Возможные проблемы
 
