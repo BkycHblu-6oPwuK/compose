@@ -68,7 +68,7 @@ openssl req -x509 -nodes -days 9999 -newkey rsa:2048 -keyout privkey.pem -out fu
 
 Так как пакет расчитан для локальной разработки, здесь не будет рассматриваться letscrypt
 
-## Работа с сокетами
+## nginx в php контейнере
 
 Для работы с сокетами в php кентейнер был установлен nginx который проксирует запросы на контейнер nginx.
 
@@ -108,7 +108,7 @@ compose share
 
 Сайт будет доступен 1 час, после этого команду можно выполнить заново.
 
-доступные флаги expose для проброса через команду share:
+доступные флаги expose для проброса через команду compose share:
 
 - `--auth`
 - `--server`
@@ -119,6 +119,31 @@ compose share
 
 Документация expose - https://expose.dev/docs/introduction
 
+## Sphinx (поисковая система)
+
+sphinx является сервисом в docker-compose.yml (добавляется при установке) и собирается на основе Dockerfile из _docker/sphinx/Dockerfile, где так же лежит и файл конфигурации sphinx.conf.
+
+После запуска контейнеров можно подключать к sphinx:
+
+```
+sphinx:9306 - протокол MySql
+sphinx:9312 - стандартный протокой
+```
+
+## SSH ключи
+
+ssh ключи пробрасываются с помощью 'secrets' и вам достаточно расскомментировать соответствующие строки (начинающиеся с "#ssh") в следующих файлах:
+
+- `docker-compose.yml`
+- `_docker/app/php-{your-version}/Dockerfile`
+
+## xdebug
+
+для работы xdebug раскомментируйте строки начинающиеся с "#xdebug", в следующих файлах:
+
+- `docker-compose.yml`
+- `_docker/app/php-{your-version}/Dockerfile`
+
 ## Описание всех доступных команд
 
 - `install` - Создание docker-compose.yml в текущей директории
@@ -128,6 +153,10 @@ compose install
 - `publish` - Публикация файлов конфигурации в текущей директории
 ```bash
 compose publish
+```
+- `share` - Позволяет сделать сайт доступным из интернета
+```bash
+compose npm install
 ```
 - `php` - Выполнение команды php в контейнере с php
 ```bash
