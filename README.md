@@ -62,12 +62,7 @@ compose publish
 
 Сервер одинаково настроен на работу как по http, так и по https.
 
-Если нужно сгенерировать свои сертификат и ключ в текущую директорию:
-```bash 
-openssl req -x509 -nodes -days 9999 -newkey rsa:2048 -keyout privkey.pem -out fullchain.pem
-```
-
-Так как пакет расчитан для локальной разработки, здесь не будет рассматриваться letscrypt
+Более подробно - https://github.com/BkycHblu-6oPwuK/compose/tree/main/src/_docker/nginx
 
 ## nginx в php контейнере
 
