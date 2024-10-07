@@ -31,6 +31,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- \
     --install-dir=/usr/local/bin
 
 COPY ${DOCKER_PATH}/nginx/certs/ /usr/local/share/ca-certificates/
+COPY ${DOCKER_PATH}/nginx/certs/ /etc/nginx/certs
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     wget \
@@ -46,10 +47,14 @@ RUN apt-get update && apt-get install -y nginx
 #cron supervisor
 
 #cron COPY ${DOCKER_PATH}/app/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-#cron COPY ${DOCKER_PATH}/app/crontab.txt /tmp/crontab.txt
-#cron RUN cat /tmp/crontab.txt >> /etc/crontab && echo "" >> /etc/crontab && rm /tmp/crontab.txt
-#cron RUN crontab /etc/crontab && service cron reload
+#cron COPY ${DOCKER_PATH}/app/cron/appuser.txt /var/spool/cron/crontabs/appuser
+#cron COPY ${DOCKER_PATH}/app/cron/root.txt /var/spool/cron/crontabs/root
+#cron RUN echo "" >> /var/spool/cron/crontabs/appuser
+#cron RUN echo "" >> /var/spool/cron/crontabs/root
+#cron RUN chown appuser:appuser /var/spool/cron/crontabs/appuser
+#cron RUN chmod 0600 /var/spool/cron/crontabs/appuser /var/spool/cron/crontabs/root
 #cron RUN touch /var/log/cron.log
+#cron RUN service cron restart
 #cron COPY ${DOCKER_PATH}/bin/app_entrypoint.sh /usr/local/bin/entrypoint.sh
 #cron RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh
 #cron RUN chmod +x /usr/local/bin/entrypoint.sh

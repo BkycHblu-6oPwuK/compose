@@ -7,6 +7,7 @@ RUN groupadd --force -g $USERGROUP nginxuser
 RUN useradd -ms /bin/bash --no-user-group -g $USERGROUP -u $USERGROUP nginxuser
 
 COPY ${DOCKER_PATH}/nginx/certs/ /usr/local/share/ca-certificates/
+COPY ${DOCKER_PATH}/nginx/certs/ /etc/nginx/certs
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     wget \

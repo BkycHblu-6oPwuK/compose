@@ -8,7 +8,6 @@
     volumes:
       - ${site_path}:/var/www
       - ${docker_path}/nginx/conf.d/:/etc/nginx/conf.d
-      - ${docker_path}/nginx/certs/:/etc/nginx/certs
     ports:
       - "80:80"
       - "443:443"
