@@ -80,7 +80,9 @@ compose publish
 
 Перейдите в "_docker/app/php-{your-version}/Dockerfile" и раскомментируйте строки начинающиеся с - "#cron"
 
-Запись заданий осуществляйте в "_docker/app/crontab.txt"
+Запись заданий осуществляйте в:
+- `_docker/app/cron/appuser.txt` - для пользователя сайта
+- `_docker/app/cron/root.txt` - для root
 
 выполните команду
 
@@ -157,7 +159,7 @@ compose php -v
 ```bash
 compose composer install
 ```
-- `npm` - Выполнение команды npm в контейнере с node js если он был установлен ()
+- `npm` - Выполнение команды npm в контейнере с node js если он был установлен
 ```bash
 compose npm install
 ```

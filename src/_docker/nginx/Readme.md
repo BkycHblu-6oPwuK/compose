@@ -41,7 +41,7 @@ DNS.1 = localhost
 openssl x509 -req -in localhost.csr -CA rootCA.crt -CAkey rootCA.key -CAcreateserial -out localhost.crt -days 9999 -sha256 -extfile localhost.ext
 ```
 
-## Импорт конревого сертификата в доверенное хранилище на хосте linux
+## Импорт корневого сертификата в доверенное хранилище на хосте linux
 
 ```
 sudo cp rootCA.crt /usr/local/share/ca-certificates/
