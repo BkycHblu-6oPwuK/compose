@@ -31,7 +31,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- \
     --filename=composer \
     --install-dir=/usr/local/bin
 
-COPY ${DOCKER_PATH}/nginx/certs/fullchainloc.pem /usr/local/share/ca-certificates/
+COPY ${DOCKER_PATH}/nginx/certs/ /usr/local/share/ca-certificates/
 RUN apt-get update && apt-get install -y \
     ca-certificates \
     wget \
