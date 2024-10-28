@@ -21,4 +21,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - && \
 RUN groupadd --force -g $USERGROUP nodeuser && \
     useradd -ms /bin/bash --no-user-group -g $USERGROUP -u $USERGROUP nodeuser
 
+RUN chown -R nodeuser:nodeuser /usr
+RUN npm install -g pm2
+
 WORKDIR ${NODE_PATH}

@@ -196,6 +196,9 @@ case $1 in
   npm)
     docker-compose exec -it --user nodeuser node "$@"
     ;;
+  pm2)
+    docker-compose exec -it --user nodeuser node "$@"
+    ;;
   share)
     shift
     docker_cmd="docker run --init --rm -p "4040":4040 -t beyondcodegmbh/expose-server:latest share http://host.docker.internal:80"
