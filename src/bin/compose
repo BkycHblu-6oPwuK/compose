@@ -197,7 +197,7 @@ case $1 in
     docker-compose exec -it --user nodeuser node "$@"
     ;;
   pm2)
-    docker-compose exec -it --user nodeuser node "$@"
+    docker-compose exec -it --user root node "$@"
     ;;
   share)
     shift
