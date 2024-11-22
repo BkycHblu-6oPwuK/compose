@@ -7,7 +7,12 @@ ENV SUPERVISOR_PHP_USER="appuser"
 RUN groupadd --force -g $USERGROUP appuser
 RUN useradd -ms /bin/bash --no-user-group -g $USERGROUP -u $USERGROUP appuser
 
-RUN apt-get update && apt-get install -y \
+COPY ${DOCKER_PATH}/nginx/certs/ /usr/local/share/ca-certificates/
+COPY ${DOCKER_PATH}/nginx/certs/ /etc/nginx/certs
+
+RUN echo "postfix postfix/mailname string localhost" | debconf-set-selections && \
+    echo "postfix postfix/main_mailer_type string 'Internet Site'" | debconf-set-selections && \
+    apt-get update && apt-get install -y \
     apt-utils \
     libpq-dev \
     libpng-dev \
@@ -21,7 +26,19 @@ RUN apt-get update && apt-get install -y \
     jpegoptim \
     optipng \
     ghostscript \
+    postfix \
+    nginx \
+    ca-certificates \
+    wget \
+#cron    cron \
+#cron    supervisor \
+#imagick    libmagickwand-dev imagemagick \
     gifsicle && \
+    update-ca-certificates && \
+#imagick    pecl install imagick && \
+#xdebug    pecl install xdebug-3.1.6 && \
+#imagick    docker-php-ext-enable imagick && \
+#xdebug    docker-php-ext-enable xdebug && \
     docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-xpm && \
     docker-php-ext-install pdo_mysql mysqli bcmath gd zip
 
@@ -29,22 +46,6 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 RUN curl -sS https://getcomposer.org/installer | php -- \
     --filename=composer \
     --install-dir=/usr/local/bin
-
-COPY ${DOCKER_PATH}/nginx/certs/ /usr/local/share/ca-certificates/
-COPY ${DOCKER_PATH}/nginx/certs/ /etc/nginx/certs
-RUN apt-get update && apt-get install -y \
-    ca-certificates \
-    wget \
-    && update-ca-certificates
-
-RUN apt-get update && apt-get install -y \
-        postfix
-
-RUN apt-get update && apt-get install -y nginx
-
-#cron RUN apt-get update && apt-get install -y \
-#cron cron \
-#cron supervisor
 
 #cron COPY ${DOCKER_PATH}/app/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 #cron COPY ${DOCKER_PATH}/app/cron/appuser.txt /var/spool/cron/crontabs/appuser
@@ -58,11 +59,6 @@ RUN apt-get update && apt-get install -y nginx
 #cron COPY ${DOCKER_PATH}/bin/app_entrypoint.sh /usr/local/bin/entrypoint.sh
 #cron RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh
 #cron RUN chmod +x /usr/local/bin/entrypoint.sh
-
-#imagic RUN pecl install imagick && docker-php-ext-enable imagick
-
-#xdebug RUN pecl install xdebug-3.1.6 \
-#xdebug     && docker-php-ext-enable xdebug
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 

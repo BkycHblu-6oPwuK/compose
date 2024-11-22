@@ -38,13 +38,21 @@ choose_php_version() {
   echo "Выберите версию PHP:"
   echo "1) PHP 7.4"
   echo "2) PHP 8.2"
-  read -p "Введите номер версии (1 или 2): " php_version_choice
+  echo "3) PHP 8.3"
+  echo "4) PHP 8.4"
+  read -p "Введите номер версии: " php_version_choice
   case $php_version_choice in
     1)
       php_version="7.4"
       ;;
     2)
       php_version="8.2"
+      ;;
+    3)
+      php_version="8.3"
+      ;;
+    4)
+      php_version="8.4"
       ;;
     *)
       echo "Неправильный выбор. Попробуйте снова."
