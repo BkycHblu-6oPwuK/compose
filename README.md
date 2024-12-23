@@ -203,6 +203,59 @@ compose build
 - `appuser` - в контейнере с php (service app)
 - `nodeuser` - в контейнере с node js (service node)
 
+## Настройка Redis
+
+Для настройки redis выполните следующие шаги:
+
+1. Добавьте сервис сервера redis в docker-compose.yml
+```yml
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    container_name: redis
+    networks:
+      - compose
+volumes:
+  ...
+  redis_data:
+```
+2. В dockerfile вашего app сервиса (_docker/app/php-{your-version}/Dockerfile) добавьте установку php модуля redis и igbinary
+```dockerfile
+RUN pecl install igbinary && \
+    pecl install -D 'enable-redis-igbinary="yes"' redis && \
+    docker-php-ext-enable igbinary redis
+```
+3. Выполните build.
+
+## Настройка memcached
+
+Для настройки memcached выполните следующие шаги:
+
+1. Добавьте сервис сервера memcached в docker-compose.yml
+```yml
+  memcached:
+    image: memcached
+    ports:
+      - "11211:11211"
+    container_name: memcached
+    networks:
+      - compose
+```
+2. В dockerfile вашего app сервиса (_docker/app/php-{your-version}/Dockerfile) добавьте установку php модуля memcached или memcache и нескольких пакетов
+```dockerfile
+RUN apt-get update && apt-get install -y \
+    libmemcached-dev \
+    zlib1g-dev
+# используйте один из php модулей для работы с сервером memcached
+RUN pecl install memcache && docker-php-ext-enable memcache
+RUN pecl install memcached && docker-php-ext-enable memcached
+```
+3. Выполните build.
+
 ## Возможные проблемы
 
 - `bash: compose: Permission denied` - выполнить команду
