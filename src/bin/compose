@@ -123,8 +123,6 @@ choose_sphinx() {
 }
 
 create_docker_compose() {
-  echo "version: '3.8'" > $output_file
-  echo "" >> $output_file
   echo "services:" >> $output_file
 
   sed "s|\${docker_path}|${docker_path}|g; s|\${site_path}|${site_path}|g" \
