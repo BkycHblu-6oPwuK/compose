@@ -18,10 +18,10 @@
       - mysql
     environment:
         DOCKER_PATH: ${docker_path}
+      #xdebug  PHP_IDE_CONFIG: 'serverName=xdebugServer'
+      #xdebug  XDEBUG_TRIGGER: testTrig
     extra_hosts:
       - host.docker.internal:host-gateway
-    #xdebug    PHP_IDE_CONFIG: 'serverName=xdebugServer'
-    #xdebug    XDEBUG_TRIGGER: testTrig
     #ssh secrets:
     #ssh   - host_ssh_key
     networks:

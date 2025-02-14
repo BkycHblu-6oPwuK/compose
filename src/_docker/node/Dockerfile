@@ -2,7 +2,7 @@ FROM ubuntu:22.04
 
 ARG NODE_VERSION=20
 ARG USERGROUP
-ARG NODE_PATH=local/js/vite
+ARG NODE_PATH=/var/www/
 ENV PATH=$PATH:/usr/bin
 
 RUN apt-get update && apt-get install -y \
