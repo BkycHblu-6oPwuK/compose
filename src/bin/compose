@@ -229,9 +229,11 @@ case $1 in
     eval $docker_cmd
     ;;
   *)
-    if command -v docker compose >/dev/null 2>&1; then
+    if docker compose version >/dev/null 2>&1; then
+      echo "1";
       docker compose "$@"
-    elif command -v docker-compose >/dev/null 2>&1; then
+    elif docker-compose version >/dev/null 2>&1; then
+      echo "2";
       docker-compose "$@"
     else
       echo "Ошибка: Docker Compose не установлен." >&2
