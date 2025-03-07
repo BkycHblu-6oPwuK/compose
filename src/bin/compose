@@ -230,10 +230,8 @@ case $1 in
     ;;
   *)
     if docker compose version >/dev/null 2>&1; then
-      echo "1";
       docker compose "$@"
     elif docker-compose version >/dev/null 2>&1; then
-      echo "2";
       docker-compose "$@"
     else
       echo "Ошибка: Docker Compose не установлен." >&2
