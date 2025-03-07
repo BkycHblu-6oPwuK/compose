@@ -229,6 +229,13 @@ case $1 in
     eval $docker_cmd
     ;;
   *)
-    docker-compose "$@"
+    if command -v docker compose >/dev/null 2>&1; then
+      docker compose "$@"
+    elif command -v docker-compose >/dev/null 2>&1; then
+      docker-compose "$@"
+    else
+      echo "Ошибка: Docker Compose не установлен." >&2
+      exit 1
+    fi
     ;;
 esac
