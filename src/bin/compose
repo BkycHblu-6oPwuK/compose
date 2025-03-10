@@ -202,6 +202,9 @@ case $1 in
   npm)
     docker-compose exec -it --user nodeuser node "$@"
     ;;
+  npx)
+    docker-compose exec -it --user nodeuser node "$@"
+    ;;
   pm2)
     docker-compose exec -it --user root node "$@"
     ;;

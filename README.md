@@ -113,7 +113,7 @@ nginx.conf для контейнера php лежит в _docker/app/nginx.conf
 
 Так же в сервис прокидывается файл конфигурации my.cnf, он располагается в ./_docker/mysql/my.cnf - туда вы можете вносить свои правки.
 
-## Node и npm
+## Node и npm, npx
 
 По умолчанию установлена 20 версия.
 
@@ -126,6 +126,7 @@ nginx.conf для контейнера php лежит в _docker/app/nginx.conf
 Команды npm выполняются слудующим образом:
 ```bash
 compose npm {arg}
+compose npx {arg}
 ```
 
 ## Пакет pm2 в node контейнере
@@ -217,6 +218,10 @@ compose composer install
 - `npm` - Выполнение команды npm в контейнере с node js если он был установлен
 ```bash
 compose npm install
+```
+- `npx` - Выполнение команды npx в контейнере с node js если он был установлен
+```bash
+compose npx create-vite@latest my-app
 ```
 - `pm2` - Выполнение команды pm2 в контейнере с node js если он был установлен. Команда принимает такие же аргументы как и оригинальная pm2
 ```bash
