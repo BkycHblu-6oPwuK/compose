@@ -1,5 +1,14 @@
 #!/bin/bash
 
+if docker compose version >/dev/null 2>&1; then
+  DOCKER_COMPOSE="docker compose"
+elif docker-compose version >/dev/null 2>&1; then
+  DOCKER_COMPOSE="docker-compose"
+else
+  echo "Ошибка: Docker Compose не установлен." >&2
+  exit 1
+fi
+
 docker_path="./vendor/beeralex/compose/src/_docker"
 output_file="./docker-compose.yml"
 partials_path="./vendor/beeralex/compose/src/partials"
@@ -194,19 +203,19 @@ case $1 in
     publish_docker_files
     ;;
   php)
-    docker-compose exec -it --user appuser app $@
+    $DOCKER_COMPOSE exec -it --user appuser app $@
     ;;
   composer)
-    docker-compose exec -it --user appuser app $@
+    $DOCKER_COMPOSE exec -it --user appuser app $@
     ;;
   npm)
-    docker-compose exec -it --user nodeuser node "$@"
+    $DOCKER_COMPOSE exec -it --user nodeuser node "$@"
     ;;
   npx)
-    docker-compose exec -it --user nodeuser node "$@"
+    $DOCKER_COMPOSE exec -it --user nodeuser node "$@"
     ;;
   pm2)
-    docker-compose exec -it --user root node "$@"
+    $DOCKER_COMPOSE exec -it --user root node "$@"
     ;;
   share)
     shift
@@ -232,13 +241,6 @@ case $1 in
     eval $docker_cmd
     ;;
   *)
-    if docker compose version >/dev/null 2>&1; then
-      docker compose "$@"
-    elif docker-compose version >/dev/null 2>&1; then
-      docker-compose "$@"
-    else
-      echo "Ошибка: Docker Compose не установлен." >&2
-      exit 1
-    fi
+    $DOCKER_COMPOSE "$@"
     ;;
 esac
