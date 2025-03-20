@@ -11,7 +11,7 @@
       - ${docker_path}/app/php-${php_version}/php.ini:/usr/local/etc/php/conf.d/php.ini
       #xdebug- ${docker_path}/app/php-${php_version}/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
       - ${docker_path}/app/php-fpm.conf:/usr/local/etc/php-fpm.d/zzzzwww.conf
-      - ${docker_path}/app/nginx.conf:/etc/nginx/conf.d/nginx.conf
+      - ${docker_path}/app/nginx/:/etc/nginx/conf.d
     ports:
       - "9000:9000"
     depends_on:

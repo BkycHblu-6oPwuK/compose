@@ -10,11 +10,13 @@ else
 fi
 
 docker_path="./vendor/beeralex/compose/src/_docker"
+config_path="./config.json"
 output_file="./docker-compose.yml"
 partials_path="./vendor/beeralex/compose/src/partials"
 install_node="N"
 install_sphinx="N"
 site_path="./"
+domain_name=""
 export USERGROUP=${USERGROUP:-$(id -g)}
 
 install() {
@@ -24,6 +26,24 @@ install() {
   choose_node_js
   choose_sphinx
   create_docker_compose
+}
+
+create_site() {
+  if [ -f "./config.json" ]; then
+    load_config_json
+    set_docker_path
+    set_domain_name
+    mkdir -p "${site_path}${domain_name}"
+    create_certs
+  else
+    create_default_config
+  fi
+}
+
+set_docker_path(){
+  if [ -d "./_docker" ]; then
+    docker_path="./_docker"
+  fi
 }
 
 set_site_path() {
@@ -171,6 +191,7 @@ create_docker_compose() {
   echo "#ssh    file: ~/.ssh/file.ppk" >> $output_file
 
   echo "docker-compose.yml создан."
+  save_config_json
 }
 
 publish_docker_files() {
@@ -193,6 +214,69 @@ publish_docker_files() {
   fi
 }
 
+save_config_json() {
+  local stub_file="${partials_path}/config.stub"
+  sed "s|\${site_path}|${site_path}|g" "$stub_file" > $config_path
+}
+
+create_default_config() {
+  set_site_path
+  save_config_json
+}
+
+load_config_json() {
+  site_path=$(grep '"site_path"' "$config_path" | sed -E 's/.*"site_path": *"(.*)".*/\1/')
+}
+
+set_domain_name() {
+  read -p "Введите название сайта (доменное имя) " domain_name
+  if [ ${#domain_name} -eq 0 ]; then
+    echo "Вы ввели пустое значение, попробуйте снова"
+    set_domain_name
+  fi
+}
+
+create_certs() {
+  local root_crt="$docker_path/nginx/certs/rootCA.crt"
+  local root_key="$docker_path/nginx/certs/rootCA.key"
+  
+  local domain_key="$docker_path/nginx/certs/${domain_name}/$domain_name.key"
+  local domain_csr="$docker_path/nginx/certs/${domain_name}/$domain_name.csr"
+  local domain_ext="$docker_path/nginx/certs/${domain_name}/$domain_name.ext"
+  local domain_crt="$docker_path/nginx/certs/${domain_name}/$domain_name.crt"
+
+  local nginx_key="$docker_path/nginx/certs/${domain_name}/nginx.key"
+  local nginx_csr="$docker_path/nginx/certs/${domain_name}/nginx.csr"
+  local nginx_ext="$docker_path/nginx/certs/${domain_name}/nginx.ext"
+  local nginx_crt="$docker_path/nginx/certs/${domain_name}/nginx.crt"
+
+  local nginx_conf="$docker_path/nginx/conf.d/$domain_name.conf"
+  local nginx_app_conf="$docker_path/app/nginx/$domain_name.conf"
+  local nginx_part_conf="$docker_path/nginx/conf.d/snippets/$domain_name.conf"
+
+  local stub_domain_certs_file="${partials_path}/certs_domain_conf.stub"
+  local stub_nginx_certs_file="${partials_path}/certs_nginx_conf.stub"
+  local stub_nginx_file="${partials_path}/nginx_conf.stub"
+  local stub_nginx_part_file="${partials_path}/nginx_part_conf.stub"
+  local stub_nginx_app_file="${partials_path}/nginx_app_conf.stub"
+
+  mkdir -p "$docker_path/nginx/certs/${domain_name}"
+
+  sed "s|\${domain}|${domain_name}|g" "$stub_domain_certs_file" > $domain_ext
+  sed "s|\${domain}|${domain_name}|g" "$stub_nginx_certs_file" > $nginx_ext
+  sed "s|\${domain}|${domain_name}|g" "$stub_nginx_part_file" > $nginx_part_conf
+  sed "s|\${domain}|${domain_name}|g" "$stub_nginx_file" > $nginx_conf
+  sed "s|\${domain}|${domain_name}|g" "$stub_nginx_app_file" > $nginx_app_conf
+
+  openssl genrsa -out $nginx_key 2048
+  openssl req -new -key $nginx_key -out $nginx_csr -subj "/C=RU/ST=Omsk Oblast/L=Omsk/O=company/CN=nginx"
+  openssl x509 -req -in $nginx_csr -CA $root_crt -CAkey $root_key -CAcreateserial -out $nginx_crt -days 9999 -sha256 -extfile $nginx_ext
+
+  openssl genrsa -out $domain_key 2048
+  openssl req -new -key $domain_key -out $domain_csr -subj "/C=RU/ST=Omsk Oblast/L=Omsk/O=company/CN=$domain_name"
+  openssl x509 -req -in $domain_csr -CA $root_crt -CAkey $root_key -CAcreateserial -out $domain_crt -days 9999 -sha256 -extfile $domain_ext
+}
+
 case $1 in
   install)
     echo "Запускаем установку..."
@@ -201,6 +285,13 @@ case $1 in
   publish)
     echo "Запускаем публикацию Docker конфигураций..."
     publish_docker_files
+    ;;
+  create)
+    if [ "$2" == "site" ]; then
+      create_site
+    else
+      echo "Неверная команда для create!"
+    fi
     ;;
   php)
     $DOCKER_COMPOSE exec -it --user appuser app $@
