@@ -21,10 +21,10 @@
     "prefer-stable": true,
     "scripts": {
         "post-install-cmd": [
-            "chmod +x src/bin/hosts_push"
+            "chmod +x vendor/beeralex/compose/src/bin/hosts_push"
         ],
         "post-update-cmd": [
-            "chmod +x src/bin/hosts_push"
+            "chmod +x vendor/beeralex/compose/src/bin/hosts_push"
         ]
     },
     "bin": [
