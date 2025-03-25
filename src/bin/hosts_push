@@ -1,0 +1,57 @@
+#!/bin/bash
+
+HOSTS_FILE="./hosts"
+HOST_FILE_WINDOWS_WSL="/mnt/c/Windows/System32/drivers/etc/hosts"
+HOST_FILE_WINDOWS="C:\\Windows\\System32\\drivers\\etc\\hosts"
+IS_WSL=false
+
+if [ ! -f "$HOSTS_FILE" ]; then
+  echo "Файл $HOSTS_FILE не найден!"
+  exit 1
+fi
+
+if [ -f "$HOST_FILE_WINDOWS_WSL" ]; then
+  IS_WSL=true;
+  if ! command -v powershell.exe &> /dev/null; then
+    echo "PowerShell не найден, не удается добавлять записи в hosts на Windows!"
+    exit 1
+  fi
+else 
+  if [ ! -f "/etc/hosts" ]; then
+    echo "/etc/hosts не найден!"
+    exit 1
+  fi
+fi
+
+mapfile -t HOSTS_LINES < "$HOSTS_FILE"
+
+for HOST_ENTRY in "${HOSTS_LINES[@]}"; do
+  if [ -z "$HOST_ENTRY" ]; then
+    #echo "Пропускаем пустую строку..."
+    continue
+  fi
+
+  echo "Добавление записи в hosts: $HOST_ENTRY"
+
+  if [ "$IS_WSL" = true ]; then
+    powershell.exe -ExecutionPolicy Bypass -NoProfile -File "$(dirname "$0")/hosts_push.ps1" -HOST_FILE_WINDOWS "$HOST_FILE_WINDOWS" -HOST_ENTRY "$HOST_ENTRY"
+    if [ $? -eq 0 ]; then
+      echo "Команда для строки выполнена успешно"
+    else
+      echo "Ошибка при добавлении записи в hosts на Windows через PowerShell."
+    fi
+  else
+    if ! grep -q "$HOST_ENTRY" /etc/hosts; then \
+        echo "$HOST_ENTRY" | sudo tee -a /etc/hosts > /dev/null; \
+        echo "Запись добавлена в /etc/hosts на Linux."; \
+    else \
+        echo "Запись уже существует в /etc/hosts."; \
+    fi
+
+    if [ $? -eq 0 ]; then
+      echo "Команда для строки выполнена успешно"
+    else
+      echo "Ошибка при добавлении записи в /etc/hosts."
+    fi
+  fi
+done

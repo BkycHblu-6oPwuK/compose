@@ -9,14 +9,18 @@ else
   exit 1
 fi
 
+HOSTS_PUSH="$(dirname "$0")/hosts_push"
+
 docker_path="./vendor/beeralex/compose/src/_docker"
 config_path="./config.json"
+hosts_path="./hosts"
 output_file="./docker-compose.yml"
 partials_path="./vendor/beeralex/compose/src/partials"
 install_node="N"
 install_sphinx="N"
 site_path="./"
 domain_name=""
+is_new_site=false
 export USERGROUP=${USERGROUP:-$(id -g)}
 
 install() {
@@ -30,11 +34,14 @@ install() {
 
 create_site() {
   if [ -f "./config.json" ]; then
+    is_new_site=true
     load_config_json
     set_docker_path
     set_domain_name
+    push_to_local_hosts
     mkdir -p "${site_path}${domain_name}"
     create_certs
+    $HOSTS_PUSH
   else
     create_default_config
   fi
@@ -254,6 +261,11 @@ create_certs() {
   local nginx_app_conf="$docker_path/app/nginx/$domain_name.conf"
   local nginx_part_conf="$docker_path/nginx/conf.d/snippets/$domain_name.conf"
 
+  local nginx_root_path="/var/www"
+  if [ "$is_new_site" = true ]; then
+    nginx_root_path="/var/www/$domain_name"
+  fi
+
   local stub_domain_certs_file="${partials_path}/certs_domain_conf.stub"
   local stub_nginx_certs_file="${partials_path}/certs_nginx_conf.stub"
   local stub_nginx_file="${partials_path}/nginx_conf.stub"
@@ -264,7 +276,7 @@ create_certs() {
 
   sed "s|\${domain}|${domain_name}|g" "$stub_domain_certs_file" > $domain_ext
   sed "s|\${domain}|${domain_name}|g" "$stub_nginx_certs_file" > $nginx_ext
-  sed "s|\${domain}|${domain_name}|g" "$stub_nginx_part_file" > $nginx_part_conf
+  sed "s|\${domain}|${domain_name}|g; s|\${root_path}|${nginx_root_path}|g" "$stub_nginx_part_file" > "$nginx_part_conf"
   sed "s|\${domain}|${domain_name}|g" "$stub_nginx_file" > $nginx_conf
   sed "s|\${domain}|${domain_name}|g" "$stub_nginx_app_file" > $nginx_app_conf
 
@@ -275,6 +287,10 @@ create_certs() {
   openssl genrsa -out $domain_key 2048
   openssl req -new -key $domain_key -out $domain_csr -subj "/C=RU/ST=Omsk Oblast/L=Omsk/O=company/CN=$domain_name"
   openssl x509 -req -in $domain_csr -CA $root_crt -CAkey $root_key -CAcreateserial -out $domain_crt -days 9999 -sha256 -extfile $domain_ext
+}
+
+push_to_local_hosts() {
+  echo "127.0.0.1 $domain_name" >> "$hosts_path"
 }
 
 case $1 in
@@ -289,8 +305,21 @@ case $1 in
   create)
     if [ "$2" == "site" ]; then
       create_site
+    elif [ "$2" == "domain" ]; then
+      set_docker_path
+      set_domain_name
+      push_to_local_hosts
+      create_certs 
+      $HOSTS_PUSH
     else
       echo "Неверная команда для create!"
+    fi
+    ;;
+  hosts)
+    if [ "$2" == "push" ]; then
+      $HOSTS_PUSH
+    else
+      echo "Неверная команда для hosts!"
     fi
     ;;
   php)
