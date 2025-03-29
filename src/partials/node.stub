@@ -4,7 +4,7 @@
       dockerfile: ${docker_path}/node/Dockerfile
       args:
         USERGROUP: '${USERGROUP}'
-        NODE_VERSION: '20'
+        NODE_VERSION: '23'
         NODE_PATH: '/var/www/${path_node_root}'
     volumes:
       - ${site_path}:/var/www

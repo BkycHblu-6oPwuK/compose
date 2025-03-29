@@ -1,24 +1,38 @@
 #!/bin/bash
 
 HOSTS_FILE="./hosts"
-HOST_FILE_WINDOWS_WSL="/mnt/c/Windows/System32/drivers/etc/hosts"
-HOST_FILE_WINDOWS="C:\\Windows\\System32\\drivers\\etc\\hosts"
+SYSTEM_DRIVE=""
+HOST_FILE_WINDOWS_WSL=""
+HOST_FILE_WINDOWS=""
 IS_WSL=false
+POWERSHELL_IS_AVAILABLE=false
 
 if [ ! -f "$HOSTS_FILE" ]; then
   echo "Файл $HOSTS_FILE не найден!"
   exit 1
 fi
 
-if [ -f "$HOST_FILE_WINDOWS_WSL" ]; then
-  IS_WSL=true;
-  if ! command -v powershell.exe &> /dev/null; then
-    echo "PowerShell не найден, не удается добавлять записи в hosts на Windows!"
+if command -v powershell.exe &> /dev/null; then
+  POWERSHELL_IS_AVAILABLE=true;
+fi
+
+if [ "$POWERSHELL_IS_AVAILABLE" = true ]; then
+  SYSTEM_DRIVE=$(powershell.exe -NoProfile -Command "[System.Environment]::SystemDirectory.Substring(0,1)" | tr -d '\r');
+  if [ -z "$SYSTEM_DRIVE" ]; then
+    echo "Ошибка: не удалось определить системный диск Windows!"
     exit 1
+  fi
+  HOST_FILE_WINDOWS_WSL="/mnt/${SYSTEM_DRIVE,,}/Windows/System32/drivers/etc/hosts";
+  HOST_FILE_WINDOWS="${SYSTEM_DRIVE}:\\Windows\\System32\\drivers\\etc\\hosts";
+  if [ -f "$HOST_FILE_WINDOWS_WSL" ]; then
+    IS_WSL=true;
+  else
+    echo "Файл hosts на Windows ($HOST_FILE_WINDOWS_WSL) не найден! Записи не будут добавлены в Windows."
+    exit 1;
   fi
 else 
   if [ ! -f "/etc/hosts" ]; then
-    echo "/etc/hosts не найден!"
+    echo "/etc/hosts и powershell не найден!"
     exit 1
   fi
 fi
@@ -41,14 +55,16 @@ for HOST_ENTRY in "${HOSTS_LINES[@]}"; do
       echo "Ошибка при добавлении записи в hosts на Windows через PowerShell."
     fi
   else
-    if ! grep -q "$HOST_ENTRY" /etc/hosts; then \
-        echo "$HOST_ENTRY" | sudo tee -a /etc/hosts > /dev/null; \
-        echo "Запись добавлена в /etc/hosts на Linux."; \
-    else \
-        echo "Запись уже существует в /etc/hosts."; \
+    if ! grep -q "$HOST_ENTRY" /etc/hosts; then
+        echo "$HOST_ENTRY" | sudo tee -a /etc/hosts > /dev/null
+        echo "Запись добавлена в /etc/hosts на Linux."
+        STATUS=0
+    else
+        echo "Запись уже существует в /etc/hosts."
+        STATUS=1
     fi
-
-    if [ $? -eq 0 ]; then
+    
+    if [ $STATUS -eq 0 ]; then
       echo "Команда для строки выполнена успешно"
     else
       echo "Ошибка при добавлении записи в /etc/hosts."

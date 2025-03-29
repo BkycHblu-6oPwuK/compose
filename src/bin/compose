@@ -5,19 +5,21 @@ if docker compose version >/dev/null 2>&1; then
 elif docker-compose version >/dev/null 2>&1; then
   DOCKER_COMPOSE="docker-compose"
 else
-  echo "Ошибка: Docker Compose не установлен." >&2
+  echo "Ошибка: Docker Compose не установлен или не запущен" >&2
   exit 1
 fi
 
 HOSTS_PUSH="$(dirname "$0")/hosts_push"
-
-docker_path="./vendor/beeralex/compose/src/_docker"
+default_docker_path="./vendor/beeralex/compose/src/_docker"
+local_docker_path="./_docker"
+docker_path=""
+local_docker_path_available=false
 config_path="./config.json"
 hosts_path="./hosts"
 output_file="./docker-compose.yml"
 partials_path="./vendor/beeralex/compose/src/partials"
-install_node="N"
-install_sphinx="N"
+install_node=false
+install_sphinx=false
 site_path="./"
 domain_name=""
 is_new_site=false
@@ -36,10 +38,9 @@ create_site() {
   if [ -f "./config.json" ]; then
     is_new_site=true
     load_config_json
-    set_docker_path
     set_domain_name
     push_to_local_hosts
-    mkdir -p "${site_path}${domain_name}"
+    safe_mkdir "${site_path}${domain_name}"
     create_certs
     $HOSTS_PUSH
   else
@@ -47,118 +48,102 @@ create_site() {
   fi
 }
 
+set_local_docker_path_available() {
+  if [ -d "$local_docker_path" ]; then
+    local_docker_path_available=true
+  fi
+}
+
 set_docker_path(){
-  if [ -d "./_docker" ]; then
-    docker_path="./_docker"
+  set_local_docker_path_available
+  if [ "$local_docker_path_available" = true ]; then
+    docker_path="${local_docker_path}"
+  else 
+    docker_path="${default_docker_path}"
   fi
 }
 
 set_site_path() {
   read -p "Введите путь до директории сайта (site или пустая строка - текущая директория): " site_path
-  if [ ${#site_path} -eq 0 ]; then
+  if [ -z "$site_path" ]; then
     site_path="./"
   else
-    if [[ "${site_path}" != ./* ]]; then
+    if [[ "$site_path" == /* && "$site_path" != ./* ]]; then
+      site_path=".${site_path}"
+    elif [[ "$site_path" != ./* ]]; then
       site_path="./${site_path}"
     fi
-    if [[ "${site_path}" != */ ]]; then
+
+    if [[ "$site_path" != */ ]]; then
       site_path="${site_path}/"
     fi
-    if [ ! -d "$site_path" ]; then
-      mkdir -p "$site_path"
+    safe_mkdir "$site_path";
+  fi
+}
+
+
+choose_php_version() {
+  local choices=("PHP 7.4" "PHP 8.2" "PHP 8.3" "PHP 8.4")
+  select choice in "${choices[@]}"; do
+    case $REPLY in
+      1) php_version="7.4"; break ;;
+      2) php_version="8.2"; break ;;
+      3) php_version="8.3"; break ;;
+      4) php_version="8.4"; break ;;
+      *) echo "Неправильный выбор. Попробуйте снова." ;;
+    esac
+  done
+}
+
+choose_mysql_version() {
+  local choices=("MySQL 5.7" "MySQL 8.0")
+  select choice in "${choices[@]}"; do
+    case $REPLY in
+      1) mysql_version="5.7"; break ;;
+      2) mysql_version="8.0"; break ;;
+      *) echo "Неправильный выбор. Попробуйте снова." ;;
+    esac
+  done
+}
+
+ask_yes_no() {
+  local prompt="$1"
+  while :; do
+    read -p "$prompt (Yy/Nn): " response
+    case "$response" in
+      [Yy]) return 0 ;;
+      [Nn]) return 1 ;;
+      *) echo "Неправильный ввод. Введите Yy или Nn." ;;
+    esac
+  done
+}
+
+choose_node_js() {
+  if ask_yes_no "Устанавливать Node.js?"; then
+    install_node=true
+    echo "Введите путь до директории с package.json относительно директории сайта"
+    read -p "например (local/js/vite или пустая строка): " path_node_root
+    if [ ! -z "$path_node_root" ]; then
+      path_node_root=$(echo "$path_node_root" | sed 's|^/||; s|/$||; s|^\./||')
+
+      if [ ! -d "$site_path$path_node_root" ]; then
+        echo "Директория $site_path$path_node_root не существует. Создаю..."
+        safe_mkdir "$site_path$path_node_root"
+        echo "Директория создана."
+      fi
     fi
   fi
 }
 
-choose_php_version() {
-  echo "Выберите версию PHP:"
-  echo "1) PHP 7.4"
-  echo "2) PHP 8.2"
-  echo "3) PHP 8.3"
-  echo "4) PHP 8.4"
-  read -p "Введите номер версии: " php_version_choice
-  case $php_version_choice in
-    1)
-      php_version="7.4"
-      ;;
-    2)
-      php_version="8.2"
-      ;;
-    3)
-      php_version="8.3"
-      ;;
-    4)
-      php_version="8.4"
-      ;;
-    *)
-      echo "Неправильный выбор. Попробуйте снова."
-      choose_php_version
-      ;;
-  esac
-}
-
-choose_mysql_version() {
-  echo "Выберите версию MySQL:"
-  echo "1) MySQL 5.7"
-  echo "2) MySQL 8.0"
-  read -p "Введите номер версии (1 или 2): " mysql_version_choice
-  case $mysql_version_choice in
-    1)
-      mysql_version="5.7"
-      ;;
-    2)
-      mysql_version="8.0"
-      ;;
-    *)
-      echo "Неправильный выбор. Попробуйте снова."
-      choose_mysql_version
-      ;;
-  esac
-}
-
-choose_node_js() {
-  read -p "Устанавливать ли node js? (Y или N): " available_node_js
-  case $available_node_js in
-    Y)
-      install_node=Y
-      echo "Введите путь до директории с package.json относительно директории сайта"
-      read -p "например (local/js/vite или пустая строка): " path_node_root
-      if [ ! -z "$path_node_root" ]; then
-        if [[ "${path_node_root}" = /* ]]; then
-          path_node_root="${path_node_root#/}"
-        fi
-        if [ ! -d "$site_path$path_node_root" ]; then
-          echo "Директория /var/www/$path_node_root не существует. Создаю..."
-          mkdir -p "$site_path$path_node_root"
-          echo "Директория создана."
-        fi
-      fi
-      ;;
-    N)
-      ;;
-    *)
-      echo "Неправильный выбор. Попробуйте снова."
-      choose_node_js
-      ;;
-  esac
-}
-
 choose_sphinx() {
-  read -p "Устанавливать ли sphinx? (Y или N): " available_sphinx
-  case $available_sphinx in
-    Y)
-      install_sphinx=Y
-      ;;
-    N)
-      ;;
-    *)
-      echo "Неправильный выбор. Попробуйте снова."
-      choose_sphinx
-      ;;
-  esac
+  if ask_yes_no "Устанавливать Sphinx?"; then
+    install_sphinx=true
+  fi
 }
 
 create_docker_compose() {
+  set_docker_path
+  
   echo "services:" >> $output_file
 
   sed "s|\${docker_path}|${docker_path}|g; s|\${site_path}|${site_path}|g" \
@@ -172,13 +157,13 @@ create_docker_compose() {
   sed "s|\${docker_path}|${docker_path}|g; s|\${mysql_version}|${mysql_version}|g; s|\${site_path}|${site_path}|g" \
     "${partials_path}/mysql.stub" >> $output_file
 
-  if [ "$install_node" = "Y" ]; then
+  if [ "$install_node" = true ]; then
     echo "" >> $output_file
     sed "s|\${docker_path}|${docker_path}|g; s|\${path_node_root}|${path_node_root}|g; s|\${site_path}|${site_path}|g" \
       "${partials_path}/node.stub" >> $output_file
   fi
 
-  if [ "$install_sphinx" = "Y" ]; then
+  if [ "$install_sphinx" = true ]; then
     echo "" >> $output_file
     sed "s|\${docker_path}|${docker_path}|g" \
       "${partials_path}/sphinx.stub" >> $output_file
@@ -190,7 +175,7 @@ create_docker_compose() {
   echo "    driver: bridge" >> $output_file
   echo "volumes:" >> $output_file
   echo "  mysql_data:" >> $output_file
-  if [ "$install_sphinx" = "Y" ]; then
+  if [ "$install_sphinx" = true ]; then
     echo "  sphinx_data:" >> $output_file
   fi
   echo "#sshsecrets:" >> $output_file
@@ -202,20 +187,21 @@ create_docker_compose() {
 }
 
 publish_docker_files() {
-  if [ -d "./_docker" ]; then
-    echo "Директория ./_docker уже существует. Удаляем..."
-    rm -rf ./_docker
+  if [ -d "$local_docker_path" ]; then
+    new_name="${local_docker_path}_$(date +%Y%m%d%H%M%S)"
+    echo "Директория $local_docker_path уже существует. Переименовываем в $new_name..."
+    mv "$local_docker_path" "$new_name"
   fi
 
-  echo "Переносим ${docker_path} в ./_docker..."
-  cp -r "${docker_path}" ${site_path}_docker
+  echo "Переносим ${default_docker_path} в $local_docker_path..."
+  cp -r "$default_docker_path" "$local_docker_path"
 
   if [ -f "$output_file" ]; then
     echo "Файл $output_file уже существует. Обновляем путь..."
-    sed -i "s|${docker_path}|./_docker|g" "$output_file"
-    echo "Путь в $output_file обновлен на ${site_path}_docker."
+    sed -i "s|${default_docker_path}|${local_docker_path}|g" "$output_file"
+    echo "Путь в $output_file обновлен на $local_docker_path."
   else
-    docker_path="./_docker"
+    set_local_docker_path_available
     echo "Файл $output_file не найден. Генерируем новый файл."
     install
   fi
@@ -236,14 +222,17 @@ load_config_json() {
 }
 
 set_domain_name() {
-  read -p "Введите название сайта (доменное имя) " domain_name
-  if [ ${#domain_name} -eq 0 ]; then
-    echo "Вы ввели пустое значение, попробуйте снова"
-    set_domain_name
-  fi
+  while :; do
+    read -p "Введите название сайта (доменное имя): " domain_name
+    if [ -n "$domain_name" ]; then
+      break
+    fi
+    echo "Вы ввели пустое значение, попробуйте снова."
+  done
 }
 
 create_certs() {
+  set_docker_path
   local root_crt="$docker_path/nginx/certs/rootCA.crt"
   local root_key="$docker_path/nginx/certs/rootCA.key"
   
@@ -272,7 +261,7 @@ create_certs() {
   local stub_nginx_part_file="${partials_path}/nginx_part_conf.stub"
   local stub_nginx_app_file="${partials_path}/nginx_app_conf.stub"
 
-  mkdir -p "$docker_path/nginx/certs/${domain_name}"
+  safe_mkdir "$docker_path/nginx/certs/${domain_name}"
 
   sed "s|\${domain}|${domain_name}|g" "$stub_domain_certs_file" > $domain_ext
   sed "s|\${domain}|${domain_name}|g" "$stub_nginx_certs_file" > $nginx_ext
@@ -293,6 +282,10 @@ push_to_local_hosts() {
   echo "127.0.0.1 $domain_name" >> "$hosts_path"
 }
 
+safe_mkdir() {
+  [ -d "$1" ] || mkdir -p "$1"
+}
+
 case $1 in
   install)
     echo "Запускаем установку..."
@@ -306,7 +299,6 @@ case $1 in
     if [ "$2" == "site" ]; then
       create_site
     elif [ "$2" == "domain" ]; then
-      set_docker_path
       set_domain_name
       push_to_local_hosts
       create_certs 
