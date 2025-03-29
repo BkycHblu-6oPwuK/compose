@@ -1,7 +1,7 @@
 #!/bin/bash
 
 HOSTS_FILE="./hosts"
-SYSTEM_DRIVE=""
+SYSTEM_DRIVE="C"
 HOST_FILE_WINDOWS_WSL=""
 HOST_FILE_WINDOWS=""
 IS_WSL=false
@@ -12,27 +12,35 @@ if [ ! -f "$HOSTS_FILE" ]; then
   exit 1
 fi
 
+find_hosts_file() {
+  local drive="$1"
+  HOST_FILE_WINDOWS_WSL="/mnt/${drive,,}/Windows/System32/drivers/etc/hosts"
+  HOST_FILE_WINDOWS="${drive}:\\Windows\\System32\\drivers\\etc\\hosts"
+  
+  if [ -f "$HOST_FILE_WINDOWS_WSL" ]; then
+    return 0
+  fi
+  return 1
+}
+
 if command -v powershell.exe &> /dev/null; then
-  POWERSHELL_IS_AVAILABLE=true;
+  POWERSHELL_IS_AVAILABLE=true
+  if { grep -qi microsoft /proc/version || (command -v systemd-detect-virt &> /dev/null && [ "$(systemd-detect-virt)" = "wsl" ]); }; then
+    IS_WSL=true
+  fi
 fi
 
-if [ "$POWERSHELL_IS_AVAILABLE" = true ]; then
-  SYSTEM_DRIVE=$(powershell.exe -NoProfile -Command "[System.Environment]::SystemDirectory.Substring(0,1)" | tr -d '\r');
-  if [ -z "$SYSTEM_DRIVE" ]; then
-    echo "Ошибка: не удалось определить системный диск Windows!"
-    exit 1
-  fi
-  HOST_FILE_WINDOWS_WSL="/mnt/${SYSTEM_DRIVE,,}/Windows/System32/drivers/etc/hosts";
-  HOST_FILE_WINDOWS="${SYSTEM_DRIVE}:\\Windows\\System32\\drivers\\etc\\hosts";
-  if [ -f "$HOST_FILE_WINDOWS_WSL" ]; then
-    IS_WSL=true;
-  else
-    echo "Файл hosts на Windows ($HOST_FILE_WINDOWS_WSL) не найден! Записи не будут добавлены в Windows."
-    exit 1;
+if [ "$IS_WSL" = true ]; then
+  if ! find_hosts_file "$SYSTEM_DRIVE"; then
+    SYSTEM_DRIVE=$(powershell.exe -NoProfile -Command "[System.Environment]::SystemDirectory.Substring(0,1)" | tr -d '\r')
+    if [ -z "$SYSTEM_DRIVE" ] || ! find_hosts_file "$SYSTEM_DRIVE"; then
+      echo "Ошибка: не удалось найти файл hosts на Windows!"
+      exit 1
+    fi
   fi
 else 
   if [ ! -f "/etc/hosts" ]; then
-    echo "/etc/hosts и powershell не найден!"
+    echo "/etc/hosts не найден!"
     exit 1
   fi
 fi
@@ -41,7 +49,6 @@ mapfile -t HOSTS_LINES < "$HOSTS_FILE"
 
 for HOST_ENTRY in "${HOSTS_LINES[@]}"; do
   if [ -z "$HOST_ENTRY" ]; then
-    #echo "Пропускаем пустую строку..."
     continue
   fi
 
@@ -56,18 +63,10 @@ for HOST_ENTRY in "${HOSTS_LINES[@]}"; do
     fi
   else
     if ! grep -q "$HOST_ENTRY" /etc/hosts; then
-        echo "$HOST_ENTRY" | sudo tee -a /etc/hosts > /dev/null
-        echo "Запись добавлена в /etc/hosts на Linux."
-        STATUS=0
+      echo "$HOST_ENTRY" | sudo tee -a /etc/hosts > /dev/null
+      echo "Запись добавлена в /etc/hosts на Linux."
     else
-        echo "Запись уже существует в /etc/hosts."
-        STATUS=1
-    fi
-    
-    if [ $STATUS -eq 0 ]; then
-      echo "Команда для строки выполнена успешно"
-    else
-      echo "Ошибка при добавлении записи в /etc/hosts."
+      echo "Запись уже существует в /etc/hosts."
     fi
   fi
 done
