@@ -6,4 +6,5 @@ if [ -f "$CREATE_SIMLINK" ]; then
     bash "$CREATE_SIMLINK"
 fi
 
-exec supervisord -c /etc/supervisor/conf.d/supervisord.conf
+echo "Starting Nginx..."
+nginx -g "daemon off;"

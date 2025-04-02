@@ -1,0 +1,3 @@
+/var/www/bitrix /var/www/<domain>/bitrix
+/var/www/local /var/www/<domain>/local
+/var/www/upload /var/www/<domain>/upload
