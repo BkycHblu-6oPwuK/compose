@@ -35,6 +35,10 @@ install() {
 }
 
 create_site() {
+  set_local_docker_path_available
+  if [ ! "$local_docker_path_available" = true ]; then
+    publish_docker_files
+  fi
   if [ ! -f "./config.json" ]; then
     create_default_config
   fi
@@ -287,7 +291,7 @@ safe_mkdir() {
 }
 
 push_to_simlinks() {
-  local simlinks_path="$docker_path/files/simlinks"
+  local simlinks_path="$docker_path/app/simlinks"
   echo "/var/www/bitrix /var/www/$domain_name/bitrix" >> "$simlinks_path"
   echo "/var/www/local /var/www/$domain_name/local" >> "$simlinks_path"
   echo "/var/www/upload /var/www/$domain_name/upload" >> "$simlinks_path"
@@ -306,6 +310,10 @@ case $1 in
     if [ "$2" == "site" ]; then
       create_site
     elif [ "$2" == "domain" ]; then
+      set_local_docker_path_available
+      if [ ! "$local_docker_path_available" = true ]; then
+        publish_docker_files
+      fi
       set_domain_name
       push_to_local_hosts
       create_certs 
