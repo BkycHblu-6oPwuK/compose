@@ -1,10 +1,26 @@
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"docky/config"
+	"docky/internal"
+	"fmt"
+
+	"github.com/spf13/cobra"
+)
+
+var (
+	curDirPath string // директория из которой запускается команда
+	workDirPath string // директория с docker-compose.yml
+)
 
 var rootCmd = &cobra.Command{
-	Use:   "docky",
+	Use:   config.ScriptName,
 	Short: "Программа для работы с docker-compose для битрикс проектов",
+}
+
+func init() {
+	internal.ExtractFilesInCache()
+	fmt.Println("🚀 Запуск docky...")
 }
 
 func Execute() error {
