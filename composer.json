@@ -1,6 +1,6 @@
 {
     "name": "beeralex/compose",
-    "description": "Docker-compose tools for Bitrix",
+    "description": "A cli wrapper over docker compose for local bitrix projects",
     "keywords": [
         "bitrix",
         "docker",

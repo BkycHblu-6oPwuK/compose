@@ -1,6 +1,6 @@
-# Bitrix docker-compose
+# Docker Compose for Bitrix
 
-Настроенная обертка над docker-compose для локальных проектов bitrix 
+Настроенная обертка над docker compose для локальных проектов bitrix 
 
 nginx + php (7.4, 8.2, 8.3, 8.4) + mysql (5.7, 8.0) + node 20 версии
 
@@ -10,7 +10,7 @@ nginx + php (7.4, 8.2, 8.3, 8.4) + mysql (5.7, 8.0) + node 20 версии
 composer require beeralex/compose:^1.0
 ```
 
-## Установка docker-compose.yml
+## публикация docker-compose.yml
 
 Команды выполнять в директории где находится composer.json!!!
 
