@@ -35,17 +35,21 @@ install() {
 }
 
 create_site() {
-  if [ -f "./config.json" ]; then
-    is_new_site=true
-    load_config_json
-    set_domain_name
-    push_to_local_hosts
-    safe_mkdir "${site_path}${domain_name}"
-    create_certs
-    $HOSTS_PUSH
-  else
+  set_local_docker_path_available
+  if [ ! "$local_docker_path_available" = true ]; then
+    publish_docker_files
+  fi
+  if [ ! -f "./config.json" ]; then
     create_default_config
   fi
+  is_new_site=true
+  load_config_json
+  set_domain_name
+  push_to_local_hosts
+  safe_mkdir "${site_path}${domain_name}"
+  create_certs
+  push_to_simlinks
+  $HOSTS_PUSH
 }
 
 set_local_docker_path_available() {
@@ -286,6 +290,13 @@ safe_mkdir() {
   [ -d "$1" ] || mkdir -p "$1"
 }
 
+push_to_simlinks() {
+  local simlinks_path="$docker_path/app/simlinks"
+  echo "/var/www/bitrix /var/www/$domain_name/bitrix" >> "$simlinks_path"
+  echo "/var/www/local /var/www/$domain_name/local" >> "$simlinks_path"
+  echo "/var/www/upload /var/www/$domain_name/upload" >> "$simlinks_path"
+}
+
 case $1 in
   install)
     echo "Запускаем установку..."
@@ -299,6 +310,10 @@ case $1 in
     if [ "$2" == "site" ]; then
       create_site
     elif [ "$2" == "domain" ]; then
+      set_local_docker_path_available
+      if [ ! "$local_docker_path_available" = true ]; then
+        publish_docker_files
+      fi
       set_domain_name
       push_to_local_hosts
       create_certs 

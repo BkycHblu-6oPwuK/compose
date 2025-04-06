@@ -59,8 +59,12 @@ RUN chmod 0600 /var/spool/cron/crontabs/appuser /var/spool/cron/crontabs/root
 RUN touch /var/log/cron.log
 RUN service cron restart
 COPY ${DOCKER_PATH}/bin/app_entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh && \
+    chmod +x /usr/local/bin/entrypoint.sh
+COPY ${DOCKER_PATH}/app/simlinks /usr/simlinks
+COPY ${DOCKER_PATH}/bin/create_simlink.sh /usr/local/bin/create_simlink.sh
+RUN sed -i 's/\r$//' /usr/local/bin/create_simlink.sh && \
+    chmod +x /usr/local/bin/create_simlink.sh
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
