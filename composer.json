@@ -1,26 +1,28 @@
 {
     "name": "beeralex/compose",
-    "description": "docker-compose for bitrix",
-    "keywords": ["bitrix", "docker", "docker-compose"],
+    "description": "Docker-compose tools for Bitrix",
+    "keywords": [
+        "bitrix",
+        "docker",
+        "docker-compose",
+        "environment",
+        "devtools",
+        "local",
+        "cli"
+    ],
     "type": "library",
     "license": "MIT",
-    "repositories": [
-        {
-            "type": "git",
-            "url": "https://github.com/BkycHblu-6oPwuK/compose"
-        }
-    ],
     "authors": [
         {
             "name": "Alexandr Belotsitsko",
             "email": "sanyabelyy020@gmail.com"
         }
     ],
-    "version": "1.0.0",
-    "minimum-stability": "dev",
-    "prefer-stable": true,
     "bin": [
         "src/bin/compose",
         "src/bin/hosts_push"
-    ]
+    ],
+    "require": {},
+    "minimum-stability": "stable",
+    "prefer-stable": true
 }

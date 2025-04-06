@@ -7,7 +7,7 @@ nginx + php (7.4, 8.2, 8.3, 8.4) + mysql (5.7, 8.0) + node 20 версии
 Установка:
 
 ```bash
-composer require beeralex/compose:dev-main
+composer require beeralex/compose:^1.0
 ```
 
 ## Установка docker-compose.yml
