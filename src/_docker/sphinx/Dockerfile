@@ -13,11 +13,9 @@ RUN wget http://sphinxsearch.com/files/sphinx-2.2.11-release.tar.gz && \
     make && \
     make install
 
-RUN mkdir -p /var/run/sphinx
-
-RUN rm -rf /sphinx-2.2.11-release*
-
-RUN mkdir -p /var/lib/sphinx/data
+RUN mkdir -p /var/run/sphinx && \
+    rm -rf /sphinx-2.2.11-release* && \
+    mkdir -p /var/lib/sphinx/data
 
 WORKDIR /var/lib/sphinx/data
 

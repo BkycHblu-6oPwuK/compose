@@ -3,9 +3,10 @@ FROM php:8.4-fpm
 ARG USERGROUP
 ARG DOCKER_PATH
 ENV SUPERVISOR_PHP_USER="appuser"
+ENV COMPOSER_ALLOW_SUPERUSER=1
 
-RUN groupadd --force -g $USERGROUP appuser
-RUN useradd -ms /bin/bash --no-user-group -g $USERGROUP -u $USERGROUP appuser
+RUN groupadd --force -g $USERGROUP appuser && \
+    useradd -ms /bin/bash --no-user-group -g $USERGROUP -u $USERGROUP appuser
 
 COPY ${DOCKER_PATH}/nginx/certs/ /usr/local/share/ca-certificates/
 COPY ${DOCKER_PATH}/nginx/certs/ /etc/nginx/certs
@@ -20,27 +21,33 @@ RUN apt-get update && apt-get install -y \
     libwebp-dev \
     libxpm-dev \
     zip \
-    unzip \
+    unzip
+
+RUN apt-get install -y \
     jpegoptim \
     optipng \
     ghostscript \
-    msmtp \
-    nginx \
+    msmtp \ 
+    nginx \ 
     ca-certificates \
     wget \
     cron \
     supervisor \
-#imagick    libmagickwand-dev imagemagick \
-    gifsicle && \
-    update-ca-certificates && \
-#imagick    pecl install imagick && \
-#xdebug    pecl install xdebug && \
-#imagick    docker-php-ext-enable imagick && \
-#xdebug    docker-php-ext-enable xdebug && \
+    gifsicle
+
+RUN update-ca-certificates && \
     docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-xpm && \
     docker-php-ext-install pdo_mysql mysqli bcmath gd zip
 
-ENV COMPOSER_ALLOW_SUPERUSER=1
+# === Imagick ===
+# RUN apt-get install -y libmagickwand-dev imagemagick && \
+#     pecl install imagick && \
+#     docker-php-ext-enable imagick
+
+# === Xdebug ===
+# RUN pecl install xdebug && \
+#     docker-php-ext-enable xdebug
+
 RUN curl -sS https://getcomposer.org/installer | php -- \
     --filename=composer \
     --install-dir=/usr/local/bin
@@ -52,15 +59,18 @@ RUN chown appuser:appuser /home/appuser/.msmtprc
 COPY ${DOCKER_PATH}/app/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY ${DOCKER_PATH}/app/cron/appuser.txt /var/spool/cron/crontabs/appuser
 COPY ${DOCKER_PATH}/app/cron/root.txt /var/spool/cron/crontabs/root
-RUN echo "" >> /var/spool/cron/crontabs/appuser
-RUN echo "" >> /var/spool/cron/crontabs/root
-RUN chown appuser:appuser /var/spool/cron/crontabs/appuser
-RUN chmod 0600 /var/spool/cron/crontabs/appuser /var/spool/cron/crontabs/root
-RUN touch /var/log/cron.log
-RUN service cron restart
+
+RUN echo "" >> /var/spool/cron/crontabs/appuser && \
+    echo "" >> /var/spool/cron/crontabs/root && \
+    chown appuser:appuser /var/spool/cron/crontabs/appuser && \
+    chmod 0600 /var/spool/cron/crontabs/appuser /var/spool/cron/crontabs/root && \
+    touch /var/log/cron.log && \
+    service cron restart
+
 COPY ${DOCKER_PATH}/bin/app_entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh && \
     chmod +x /usr/local/bin/entrypoint.sh
+
 COPY ${DOCKER_PATH}/app/simlinks /usr/simlinks
 COPY ${DOCKER_PATH}/bin/create_simlink.sh /usr/local/bin/create_simlink.sh
 RUN sed -i 's/\r$//' /usr/local/bin/create_simlink.sh && \

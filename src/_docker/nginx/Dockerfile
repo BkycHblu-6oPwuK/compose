@@ -3,8 +3,8 @@ FROM nginx:latest
 ARG USERGROUP
 ARG DOCKER_PATH
 
-RUN groupadd --force -g $USERGROUP nginxuser
-RUN useradd -ms /bin/bash --no-user-group -g $USERGROUP -u $USERGROUP nginxuser
+RUN groupadd --force -g $USERGROUP nginxuser && \
+    useradd -ms /bin/bash --no-user-group -g $USERGROUP -u $USERGROUP nginxuser
 
 COPY ${DOCKER_PATH}/nginx/certs/ /usr/local/share/ca-certificates/
 COPY ${DOCKER_PATH}/nginx/certs/ /etc/nginx/certs
