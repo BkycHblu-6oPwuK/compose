@@ -26,6 +26,16 @@ is_new_site=false
 export USERGROUP=${USERGROUP:-$(id -g)}
 
 install() {
+  if [ -f "$output_file" ]; then
+    if ask_yes_no "docker-compose.yml уже существует. Создать новый?"; then
+      new_name="${output_file}_$(date +%Y%m%d%H%M%S)"
+      echo "Переименовываем в $new_name..."
+      mv "$output_file" "$new_name"
+    else
+      echo "Выход из установки."
+      exit 1
+    fi
+  fi
   set_site_path
   choose_php_version
   choose_mysql_version
@@ -201,7 +211,6 @@ publish_docker_files() {
   cp -r "$default_docker_path" "$local_docker_path"
 
   if [ -f "$output_file" ]; then
-    echo "Файл $output_file уже существует. Обновляем путь..."
     sed -i "s|${default_docker_path}|${local_docker_path}|g" "$output_file"
     echo "Путь в $output_file обновлен на $local_docker_path."
   else
