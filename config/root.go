@@ -10,10 +10,11 @@ import (
 
 const (
 	ScriptName            = "docky"
-	siteDirName           = "site" // директория с проектом
-	dockerFilesDirName    = "_docker"
-	localHostsFileName    = "hosts"
-	dockerComposeFileName = "docker-compose.yml"
+	SiteDirName           = "site" // директория с проектом
+	DockerFilesDirName    = "_docker"
+	LocalHostsFileName    = "hosts"
+	DockerComposeFileName = "docker-compose.yml"
+	UserGroupVarName      = "USERGROUP"
 )
 
 var (
@@ -53,11 +54,11 @@ func GetCurDirPath() string {
 }
 
 func getWorkDirPath() string {
-	path, err := utils.FindFileUpwards(GetCurDirPath(), dockerComposeFileName)
+	path, err := utils.FindFileUpwards(GetCurDirPath(), DockerComposeFileName)
 	if err != nil {
 		log.Fatalf("docker-compose.yml не найден: %v", err)
 	}
-	workDirPath = strings.TrimSuffix(path, "/"+dockerComposeFileName)
+	workDirPath = strings.TrimSuffix(path, "/"+DockerComposeFileName)
 	return workDirPath
 }
 func GetWorkDirPath() string {
@@ -68,14 +69,25 @@ func GetWorkDirPath() string {
 }
 
 func GetSiteDirPath() string {
-	return filepath.Join(GetWorkDirPath(), siteDirName)
+	return filepath.Join(GetWorkDirPath(), SiteDirName)
 }
 func GetDockerFilesDirPath() string {
-	return filepath.Join(GetWorkDirPath(), dockerFilesDirName)
+	return filepath.Join(GetWorkDirPath(), DockerFilesDirName)
+}
+func GetDockerFilesDirPathInCache() string {
+	return filepath.Join(GetScriptCacheDir(), DockerFilesDirName)
+}
+func GetCurrentDockerFileDirPath() string {
+	path := GetDockerFilesDirPath()
+	if utils.FileIsExists(path) {
+		return path
+	}
+	path = GetDockerFilesDirPathInCache()
+	return path
 }
 func GetLocalHostsFilePath() string {
-	return filepath.Join(GetWorkDirPath(), localHostsFileName)
+	return filepath.Join(GetWorkDirPath(), LocalHostsFileName)
 }
 func GetDockerComposeFilePath() string {
-	return filepath.Join(GetWorkDirPath(), dockerComposeFileName)
+	return filepath.Join(GetWorkDirPath(), DockerComposeFileName)
 }

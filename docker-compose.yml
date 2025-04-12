@@ -1,0 +1,56 @@
+services:
+    nginx:
+        build:
+            context: /home/alex/.cache/docky/_docker
+            dockerfile: /home/alex/.cache/docky/_docker/nginx/Dockerfile
+            args:
+                DOCKER_PATH: /home/alex/.cache/docky/_docker
+                USERGROUP: ${USERGROUP}
+        volumes:
+            - /home/alex/projects/compose/site:/var/www
+            - /home/alex/.cache/docky/_docker/nginx/conf.d:/var/www
+        ports:
+            - 80:80
+            - 443:443
+        depends_on:
+            - app
+        networks:
+            - compose
+        container_name: nginx
+    app:
+        build:
+            context: /home/alex/.cache/docky/_docker
+            dockerfile: /home/alex/.cache/docky/_docker/app/php-8.2/Dockerfile
+            args:
+                DOCKER_PATH: /home/alex/.cache/docky/_docker
+                USERGROUP: ${USERGROUP}
+        volumes:
+            - /home/alex/projects/compose/site:/var/www
+            - /home/alex/.cache/docky/_docker/app/php-8.2/php.ini:/usr/local/etc/php/conf.d/php.ini
+            - /home/alex/.cache/docky/_docker/app/php-fpm.conf:/usr/local/etc/php-fpm.d/zzzzwww.conf
+            - /home/alex/.cache/docky/_docker/app/nginx:/etc/nginx/conf.d
+        ports:
+            - 9000:9000
+        depends_on:
+            - mysql
+        networks:
+            - compose
+        extra_hosts:
+            - host.docker.internal:host-gateway
+        container_name: app
+    mysql:
+        image: mysql:8.0
+        restart: always
+        volumes:
+            - mysql_data:/var/www
+            - /home/alex/.cache/docky/_docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+        ports:
+            - 8102:3306
+        networks:
+            - compose
+        container_name: mysql
+volumes:
+    mysql_data: {}
+networks:
+    compose:
+        driver: bridge

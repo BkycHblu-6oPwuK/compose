@@ -72,7 +72,7 @@ func ExtractFilesInCache() {
 	if err != nil {
 		log.Println("Ошибка при очистке кэш директории:", err)
 	}
-	if utils.DirIsExists(targetDir) {
+	if utils.FileIsExists(targetDir) {
 		return
 	}
 

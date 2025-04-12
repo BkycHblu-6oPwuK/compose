@@ -6,14 +6,16 @@ import (
 	"path/filepath"
 )
 
-func dirIsExists(dir string) bool {
-	if _, err := os.Stat(dir); os.IsNotExist(err) {
+func fileIsExists(path string) bool {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return false
 	}
 	return true
 }
-func DirIsExists(dir string) bool {
-	return dirIsExists(dir)
+
+// Проверяет существует ли файл по указанному пути или директория
+func FileIsExists(path string) bool {
+	return fileIsExists(path)
 }
 
 func findFileUpwards(startDir, fileName string) (string, error) {
@@ -34,6 +36,8 @@ func findFileUpwards(startDir, fileName string) (string, error) {
 	}
 	return "", fmt.Errorf("файл %s не найден начиная с %s", fileName, startDir)
 }
+
+// Находит путь к директории с указанным файлом
 func FindFileUpwards(startDir, fileName string) (string, error) {
 	return findFileUpwards(startDir, fileName)
 }

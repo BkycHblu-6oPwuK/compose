@@ -5,7 +5,6 @@ import (
 	"docky/utils"
 	"fmt"
 	"os"
-
 	"github.com/spf13/cobra"
 )
 
@@ -14,6 +13,11 @@ var initCmd = &cobra.Command{
 	Short: "Инициализация проекта",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := initSiteDir()
+		if err != nil {
+			fmt.Println("❌ Ошибка инициализации проекта:", err)
+			return
+		}
+		err = initDockerComposeFile()
 		if err != nil {
 			fmt.Println("❌ Ошибка инициализации проекта:", err)
 			return
@@ -28,7 +32,7 @@ func init() {
 
 func initSiteDir() error {
 	siteDirPath := config.GetSiteDirPath()
-	if utils.DirIsExists(siteDirPath) {
+	if utils.FileIsExists(siteDirPath) {
 		fmt.Println("Директория сайта уже существует")
 		return nil
 	}
@@ -38,5 +42,15 @@ func initSiteDir() error {
 		return fmt.Errorf("ошибка создания директории сайта: %v", err)
 	}
 	fmt.Println("Директория сайта успешно создана")
+	return nil
+}
+
+func initDockerComposeFile() error {
+	composeFilePath := config.GetDockerComposeFilePath()
+	if utils.FileIsExists(composeFilePath) {
+		fmt.Println("Файл docker-compose.yml уже существует")
+		return nil
+	}
+
 	return nil
 }

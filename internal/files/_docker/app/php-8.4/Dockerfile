@@ -1,14 +1,13 @@
 FROM php:8.4-fpm
 
 ARG USERGROUP
-ARG DOCKER_PATH
 ENV SUPERVISOR_PHP_USER="appuser"
 
 RUN groupadd --force -g $USERGROUP appuser
 RUN useradd -ms /bin/bash --no-user-group -g $USERGROUP -u $USERGROUP appuser
 
-COPY ${DOCKER_PATH}/nginx/certs/ /usr/local/share/ca-certificates/
-COPY ${DOCKER_PATH}/nginx/certs/ /etc/nginx/certs
+COPY nginx/certs/ /usr/local/share/ca-certificates/
+COPY nginx/certs/ /etc/nginx/certs
 
 RUN apt-get update && apt-get install -y \
     apt-utils \
@@ -45,24 +44,24 @@ RUN curl -sS https://getcomposer.org/installer | php -- \
     --filename=composer \
     --install-dir=/usr/local/bin
 
-COPY ${DOCKER_PATH}/app/msmtprc /home/appuser/.msmtprc
+COPY app/msmtprc /home/appuser/.msmtprc
 RUN chmod 600 /home/appuser/.msmtprc
 RUN chown appuser:appuser /home/appuser/.msmtprc
 
-COPY ${DOCKER_PATH}/app/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY ${DOCKER_PATH}/app/cron/appuser.txt /var/spool/cron/crontabs/appuser
-COPY ${DOCKER_PATH}/app/cron/root.txt /var/spool/cron/crontabs/root
+COPY app/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY app/cron/appuser.txt /var/spool/cron/crontabs/appuser
+COPY app/cron/root.txt /var/spool/cron/crontabs/root
 RUN echo "" >> /var/spool/cron/crontabs/appuser
 RUN echo "" >> /var/spool/cron/crontabs/root
 RUN chown appuser:appuser /var/spool/cron/crontabs/appuser
 RUN chmod 0600 /var/spool/cron/crontabs/appuser /var/spool/cron/crontabs/root
 RUN touch /var/log/cron.log
 RUN service cron restart
-COPY ${DOCKER_PATH}/bin/app_entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY bin/app_entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh && \
     chmod +x /usr/local/bin/entrypoint.sh
-COPY ${DOCKER_PATH}/app/simlinks /usr/simlinks
-COPY ${DOCKER_PATH}/bin/create_simlink.sh /usr/local/bin/create_simlink.sh
+COPY app/simlinks /usr/simlinks
+COPY bin/create_simlink.sh /usr/local/bin/create_simlink.sh
 RUN sed -i 's/\r$//' /usr/local/bin/create_simlink.sh && \
     chmod +x /usr/local/bin/create_simlink.sh
 
