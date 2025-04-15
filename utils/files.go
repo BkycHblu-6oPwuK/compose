@@ -20,10 +20,8 @@ func FileIsExists(path string) bool {
 
 func findFileUpwards(startDir, fileName string) (string, error) {
 	dir := startDir
-	fmt.Println(dir)
 	for {
 		path := filepath.Join(dir, fileName)
-		fmt.Println("Проверяем файл:", dir)
 		if _, err := os.Stat(path); err == nil {
 			return path, nil
 		}

@@ -1,10 +1,10 @@
 FROM php:8.2-fpm
 
 ARG USERGROUP
-ENV SUPERVISOR_PHP_USER="appuser"
+ENV SUPERVISOR_PHP_USER="docky"
 
-RUN groupadd --force -g $USERGROUP appuser
-RUN useradd -ms /bin/bash --no-user-group -g $USERGROUP -u $USERGROUP appuser
+RUN groupadd --force -g $USERGROUP docky
+RUN useradd -ms /bin/bash --no-user-group -g $USERGROUP -u $USERGROUP docky
 
 COPY nginx/certs/ /usr/local/share/ca-certificates/
 COPY nginx/certs/ /etc/nginx/certs
@@ -44,17 +44,17 @@ RUN curl -sS https://getcomposer.org/installer | php -- \
     --filename=composer \
     --install-dir=/usr/local/bin
 
-COPY app/msmtprc /home/appuser/.msmtprc
-RUN chmod 600 /home/appuser/.msmtprc
-RUN chown appuser:appuser /home/appuser/.msmtprc
+COPY app/msmtprc /home/docky/.msmtprc
+RUN chmod 600 /home/docky/.msmtprc
+RUN chown docky:docky /home/docky/.msmtprc
 
 COPY app/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY app/cron/appuser.txt /var/spool/cron/crontabs/appuser
+COPY app/cron/docky.txt /var/spool/cron/crontabs/docky
 COPY app/cron/root.txt /var/spool/cron/crontabs/root
-RUN echo "" >> /var/spool/cron/crontabs/appuser
+RUN echo "" >> /var/spool/cron/crontabs/docky
 RUN echo "" >> /var/spool/cron/crontabs/root
-RUN chown appuser:appuser /var/spool/cron/crontabs/appuser
-RUN chmod 0600 /var/spool/cron/crontabs/appuser /var/spool/cron/crontabs/root
+RUN chown docky:docky /var/spool/cron/crontabs/docky
+RUN chmod 0600 /var/spool/cron/crontabs/docky /var/spool/cron/crontabs/root
 RUN touch /var/log/cron.log
 RUN service cron restart
 COPY bin/app_entrypoint.sh /usr/local/bin/entrypoint.sh

@@ -5,7 +5,9 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -15,12 +17,16 @@ const (
 	LocalHostsFileName    = "hosts"
 	DockerComposeFileName = "docker-compose.yml"
 	UserGroupVarName      = "USERGROUP"
+	DockerPathVarName     = "DOCKER_PATH"
+	SitePathVarName       = "SITE_PATH"
+	SitePathInContainer   = "/var/www"
 )
 
 var (
 	scriptCacheDir string
 	curDirPath     string // директория из которой запускается команда
 	workDirPath    string // директория с docker-compose.yml
+	Timestamp      = strconv.Itoa(int(time.Now().Unix()))
 )
 
 func getScriptCacheDir() string {
@@ -56,7 +62,7 @@ func GetCurDirPath() string {
 func getWorkDirPath() string {
 	path, err := utils.FindFileUpwards(GetCurDirPath(), DockerComposeFileName)
 	if err != nil {
-		log.Fatalf("docker-compose.yml не найден: %v", err)
+		path = GetCurDirPath()
 	}
 	workDirPath = strings.TrimSuffix(path, "/"+DockerComposeFileName)
 	return workDirPath

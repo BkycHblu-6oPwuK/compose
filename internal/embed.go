@@ -4,9 +4,7 @@ import (
 	"docky/config"
 	"docky/utils"
 	"embed"
-	"fmt"
 	"io/fs"
-	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -15,9 +13,9 @@ import (
 //go:embed files/*
 var files embed.FS
 
-var MaxAgeCacheDir = 1 * 24 * time.Hour // 1 день по умолчанию
+const rootDir = "files"
 
-func cleanCacheDir(targetDir string) error {
+func cleanCacheDir(targetDir string, MaxAgeCacheDir time.Duration) error {
 	info, err := os.Stat(targetDir)
 	if os.IsNotExist(err) {
 		return nil
@@ -28,15 +26,14 @@ func cleanCacheDir(targetDir string) error {
 	}
 
 	if time.Since(info.ModTime()) > MaxAgeCacheDir {
-		fmt.Println("Удаление кэш директории:", targetDir)
 		return os.RemoveAll(targetDir)
 	}
 
 	return nil
 }
 
-func extractAllFiles(targetDir string) error {
-	return fs.WalkDir(files, "files", func(path string, d fs.DirEntry, err error) error {
+func extractAllFiles(targetDir string, root string) error {
+	return fs.WalkDir(files, root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -45,7 +42,7 @@ func extractAllFiles(targetDir string) error {
 			return nil
 		}
 
-		relPath, err := filepath.Rel("files", path)
+		relPath, err := filepath.Rel(root, path)
 		if err != nil {
 			return err
 		}
@@ -62,24 +59,44 @@ func extractAllFiles(targetDir string) error {
 			return err
 		}
 
-		fmt.Println("Запись:", dstPath)
 		return os.WriteFile(dstPath, data, 0644)
 	})
 }
-func ExtractFilesInCache() {
+
+func CleanCacheDir() error {
+	return cleanCacheDir(config.GetScriptCacheDir(), 0)
+}
+
+func ExtractFilesInCache() error {
 	targetDir := config.GetScriptCacheDir()
-	err := cleanCacheDir(targetDir)
+	err := cleanCacheDir(targetDir, 1*24*time.Hour)
 	if err != nil {
-		log.Println("Ошибка при очистке кэш директории:", err)
+		return err
 	}
 	if utils.FileIsExists(targetDir) {
-		return
+		return nil
 	}
 
-	err = extractAllFiles(targetDir)
+	err = extractAllFiles(targetDir, rootDir)
 	if err != nil {
-		log.Fatalf("Ошибка распаковки исходных файлов: %v", err)
+		return err
+	}
+	return nil
+}
+
+func PublishFiles() error {
+	targetDir := config.GetDockerFilesDirPath()
+	var err error = nil
+	if utils.FileIsExists(targetDir) {
+		err = os.Rename(targetDir, targetDir+config.Timestamp)
+		if err != nil {
+			return err
+		}
 	}
 
-	fmt.Println("Распаковка завершена:", targetDir)
+	err = extractAllFiles(targetDir, filepath.Join(rootDir, config.DockerFilesDirName))
+	if err != nil {
+		return err
+	}
+	return err
 }
