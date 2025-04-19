@@ -14,13 +14,12 @@ default_docker_path="./vendor/beeralex/compose/src/_docker"
 local_docker_path="./_docker"
 docker_path=""
 local_docker_path_available=false
-config_path="./config.json"
 hosts_path="./hosts"
 output_file="./docker-compose.yml"
 partials_path="./vendor/beeralex/compose/src/partials"
 install_node=false
 install_sphinx=false
-site_path="./"
+site_path="./site/"
 domain_name=""
 is_new_site=false
 export USERGROUP=${USERGROUP:-$(id -g)}
@@ -36,7 +35,7 @@ install() {
       exit 1
     fi
   fi
-  set_site_path
+  safe_mkdir "$site_path";
   choose_php_version
   choose_mysql_version
   choose_node_js
@@ -49,11 +48,7 @@ create_site() {
   if [ ! "$local_docker_path_available" = true ]; then
     publish_docker_files
   fi
-  if [ ! -f "./config.json" ]; then
-    create_default_config
-  fi
   is_new_site=true
-  load_config_json
   set_domain_name
   push_to_local_hosts
   safe_mkdir "${site_path}${domain_name}"
@@ -74,24 +69,6 @@ set_docker_path(){
     docker_path="${local_docker_path}"
   else 
     docker_path="${default_docker_path}"
-  fi
-}
-
-set_site_path() {
-  read -p "Введите путь до директории сайта (site или пустая строка - текущая директория): " site_path
-  if [ -z "$site_path" ]; then
-    site_path="./"
-  else
-    if [[ "$site_path" == /* && "$site_path" != ./* ]]; then
-      site_path=".${site_path}"
-    elif [[ "$site_path" != ./* ]]; then
-      site_path="./${site_path}"
-    fi
-
-    if [[ "$site_path" != */ ]]; then
-      site_path="${site_path}/"
-    fi
-    safe_mkdir "$site_path";
   fi
 }
 
@@ -197,7 +174,6 @@ create_docker_compose() {
   echo "#ssh    file: ~/.ssh/file.ppk" >> $output_file
 
   echo "docker-compose.yml создан."
-  save_config_json
 }
 
 publish_docker_files() {
@@ -218,20 +194,6 @@ publish_docker_files() {
     echo "Файл $output_file не найден. Генерируем новый файл."
     install
   fi
-}
-
-save_config_json() {
-  local stub_file="${partials_path}/config.stub"
-  sed "s|\${site_path}|${site_path}|g" "$stub_file" > $config_path
-}
-
-create_default_config() {
-  set_site_path
-  save_config_json
-}
-
-load_config_json() {
-  site_path=$(grep '"site_path"' "$config_path" | sed -E 's/.*"site_path": *"(.*)".*/\1/')
 }
 
 set_domain_name() {
@@ -307,7 +269,7 @@ push_to_simlinks() {
 }
 
 case $1 in
-  install)
+  init)
     echo "Запускаем установку..."
     install
     ;;
