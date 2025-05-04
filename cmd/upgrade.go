@@ -15,7 +15,7 @@ import (
 
 var upgradeCmd = &cobra.Command{
 	Use:   "upgrade",
-	Short: "Очищает кэш (директория _docker)",
+	Short: "Изменяет docker-compose.yml под новый формат",
 	Run: func(cmd *cobra.Command, args []string) {
 		err := upgrade()
 		if err != nil {
@@ -52,7 +52,6 @@ func upgrade() error {
 		sitePath     string
 	)
 
-	// Ищем корень "services"
 	for i := 0; i < len(root.Content[0].Content); i += 2 {
 		keyNode := root.Content[0].Content[i]
 		valNode := root.Content[0].Content[i+1]
@@ -62,14 +61,11 @@ func upgrade() error {
 				serviceName := valNode.Content[j].Value
 				serviceMap := valNode.Content[j+1]
 
-				//var buildNode *yaml.Node
 				for k := 0; k < len(serviceMap.Content); k += 2 {
 					key := serviceMap.Content[k]
 					val := serviceMap.Content[k+1]
 
-					// Обработка build
 					if key.Value == "build" {
-						//buildNode = val
 						for b := 0; b < len(val.Content); b += 2 {
 							bk := val.Content[b]
 							bv := val.Content[b+1]
@@ -111,7 +107,6 @@ func upgrade() error {
 									}
 
 									if argKey.Value == "DOCKER_PATH" {
-										// удалить
 										bv.Content = append(bv.Content[:a], bv.Content[a+2:]...)
 										a -= 2
 									}
@@ -139,13 +134,11 @@ func upgrade() error {
 									}
 								}
 
-								// Подмена php-версии в пути
 								re := regexp.MustCompile(`php-(\d+\.\d+)`)
 								if match := re.FindStringSubmatch(path); len(match) > 1 {
 									path = strings.Replace(path, match[0], "php-${PHP_VERSION}", 1)
 								}
 
-								// Назначаем обратно
 								val.Content[idx].Value = path
 							}
 						}
@@ -177,17 +170,15 @@ func upgrade() error {
 			}
 		}
 
-		// volumes
 		if keyNode.Value == "volumes" {
 			for v := 1; v < len(valNode.Content); v += 2 {
 				valNode.Content[v].Kind = yaml.MappingNode
 				valNode.Content[v].Tag = "!!map"
-				valNode.Content[v].Content = nil // очищаем
+				valNode.Content[v].Content = nil
 			}
 		}
 	}
 
-	// Сохраняем результат с сохранением порядка
 	err = os.Rename(filePath, filePath+config.Timestamp)
 	if err != nil {
 		return err
@@ -200,13 +191,6 @@ func upgrade() error {
 	if err := os.WriteFile(filePath, newYaml, 0644); err != nil {
 		return err
 	}
-
-	fmt.Println("Файл успешно преобразован: new-docker-compose.yml")
-	fmt.Printf("PHP_VERSION=%s\n", phpVersion)
-	fmt.Printf("MYSQL_VERSION=%s\n", mysqlVersion)
-	fmt.Printf("NODE_VERSION=%s\n", nodeVersion)
-	fmt.Printf("NODE_PATH=%s\n", nodePath)
-	fmt.Printf("SITE_PATH=%s\n", sitePath)
 
 	if phpVersion != "" && phpVersion != "${"+config.PhpVersionVarName+"}" {
 		myYaml.PhpVersion = phpVersion

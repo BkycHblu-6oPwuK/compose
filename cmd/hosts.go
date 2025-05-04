@@ -20,7 +20,7 @@ var pushHostsModuleCmd = &cobra.Command{
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
 		}
-		fmt.Println("✅ hosts push")
+		fmt.Println("✅ Записи в hosts перенесены!")
 	},
 }
 

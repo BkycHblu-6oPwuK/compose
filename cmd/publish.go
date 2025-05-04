@@ -11,7 +11,6 @@ import (
 
 var service string
 
-// Определяем команду `publish`
 var publishCmd = &cobra.Command{
 	Use:   "publish",
 	Short: "Публикует файлы конфигурации",

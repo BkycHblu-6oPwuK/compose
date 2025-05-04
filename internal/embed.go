@@ -69,7 +69,7 @@ func CleanCacheDir() error {
 
 func ExtractFilesInCache() error {
 	targetDir := config.GetScriptCacheDir()
-	err := cleanCacheDir(targetDir, 1*24*time.Hour)
+	err := cleanCacheDir(targetDir, 7*24*time.Hour)
 	if err != nil {
 		return err
 	}
