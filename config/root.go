@@ -8,18 +8,25 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 const (
-	ScriptName            = "docky"
-	SiteDirName           = "site" // директория с проектом
-	DockerFilesDirName    = "_docker"
-	LocalHostsFileName    = "hosts"
-	DockerComposeFileName = "docker-compose.yml"
-	UserGroupVarName      = "USERGROUP"
-	DockerPathVarName     = "DOCKER_PATH"
-	SitePathVarName       = "SITE_PATH"
-	SitePathInContainer   = "/var/www"
+	ScriptName            string = "docky"
+	SiteDirName           string = "site" // директория с проектом
+	DockerFilesDirName    string = "_docker"
+	LocalHostsFileName    string = "hosts"
+	DockerComposeFileName string = "docker-compose.yml"
+	UserGroupVarName      string = "USERGROUP"
+	DockerPathVarName     string = "DOCKER_PATH"
+	PhpVersionVarName     string = "PHP_VERSION"
+	MysqlVersionVarName   string = "MYSQL_VERSION"
+	NodeVersionVarName    string = "NODE_VERSION"
+	SitePathVarName       string = "SITE_PATH"
+	NodePathVarName       string = "NODE_PATH"
+	SitePathInContainer   string = "/var/www"
+	EnvFile               string = ".env"
 )
 
 var (
@@ -75,7 +82,16 @@ func GetWorkDirPath() string {
 }
 
 func GetSiteDirPath() string {
-	return filepath.Join(GetWorkDirPath(), SiteDirName)
+	sitePath := os.Getenv(SitePathVarName)
+	if sitePath == "" {
+		return filepath.Join(GetWorkDirPath(), SiteDirName)
+	}
+
+	if filepath.IsAbs(sitePath) {
+		return sitePath
+	}
+
+	return filepath.Join(GetWorkDirPath(), sitePath)
 }
 func GetDockerFilesDirPath() string {
 	return filepath.Join(GetWorkDirPath(), DockerFilesDirName)
@@ -96,4 +112,18 @@ func GetLocalHostsFilePath() string {
 }
 func GetDockerComposeFilePath() string {
 	return filepath.Join(GetWorkDirPath(), DockerComposeFileName)
+}
+func GetEnvFilePath() string {
+	return filepath.Join(GetWorkDirPath(), EnvFile)
+}
+func loadEnvFile() error {
+	envPath := GetEnvFilePath()
+	if utils.FileIsExists(envPath) {
+		return godotenv.Load(envPath)
+	}
+	return nil
+}
+
+func init() {
+	loadEnvFile()
 }

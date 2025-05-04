@@ -65,6 +65,7 @@ var (
 	CreateNode           = false
 	CreateSphinx         = false
 	NodePath             = ""
+	SitePath             = ""
 	AvailablePhpVersions = [4]string{
 		"7.4",
 		"8.2",
@@ -77,6 +78,7 @@ var (
 	}
 	PhpVersion   = "8.2"
 	MysqlVersion = "8.0"
+	NodeVersion  = "23"
 )
 
 func (c *ComposeFile) addService(name string, service Service) *ComposeFile {
@@ -101,14 +103,15 @@ func (c *ComposeFile) addNginxService() *ComposeFile {
 }
 
 func (c *ComposeFile) addAppService() *ComposeFile {
+	phpVersionVarName := "${" + config.PhpVersionVarName + "}"
 	service := Service{
-		Build:        Build{Context: "${" + config.DockerPathVarName + "}", Dockerfile: "${" + config.DockerPathVarName + "}/" + App + "/php-" + PhpVersion + "/" + Dockerfile + "", Args: getBaseArgsBuild()},
+		Build:        Build{Context: "${" + config.DockerPathVarName + "}", Dockerfile: "${" + config.DockerPathVarName + "}/" + App + "/php-" + phpVersionVarName + "/" + Dockerfile + "", Args: getBaseArgsBuild()},
 		Ports:        []string{"9000:9000"},
 		Dependencies: []string{Mysql},
 		Volumes: []string{
 			"${" + config.SitePathVarName + "}:" + config.SitePathInContainer,
-			"${" + config.DockerPathVarName + "}/" + App + "/php-" + PhpVersion + "/php.ini:/usr/local/etc/php/conf.d/php.ini",
-			"${" + config.DockerPathVarName + "}/" + App + "/php-" + PhpVersion + "/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini",
+			"${" + config.DockerPathVarName + "}/" + App + "/php-" + phpVersionVarName + "/php.ini:/usr/local/etc/php/conf.d/php.ini",
+			"${" + config.DockerPathVarName + "}/" + App + "/php-" + phpVersionVarName + "/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini",
 			"${" + config.DockerPathVarName + "}/" + App + "/php-fpm.conf:/usr/local/etc/php-fpm.d/zzzzwww.conf",
 			"${" + config.DockerPathVarName + "}/" + App + "/nginx:/etc/nginx/conf.d",
 		},
@@ -121,7 +124,7 @@ func (c *ComposeFile) addAppService() *ComposeFile {
 
 func (c *ComposeFile) addMysqlSerice() *ComposeFile {
 	service := Service{
-		Image:   Mysql + ":" + MysqlVersion + "",
+		Image:   Mysql + ":${" + config.MysqlVersionVarName + "}",
 		Restart: "always",
 		Ports:   []string{"8102:3306"},
 		Volumes: []string{
@@ -140,8 +143,8 @@ func (c *ComposeFile) addMysqlSerice() *ComposeFile {
 
 func (c *ComposeFile) addNodeSerice() *ComposeFile {
 	args := getBaseArgsBuild()
-	args["NODE_VERSION"] = "23"
-	args["NODE_PATH"] = config.SitePathInContainer + "/" + NodePath
+	args["NODE_VERSION"] = "${" + config.NodeVersionVarName + "}"
+	args["NODE_PATH"] = "${" + config.NodePathVarName + "}"
 	service := Service{
 		Build: Build{Context: "${" + config.DockerPathVarName + "}", Dockerfile: "${" + config.DockerPathVarName + "}/" + Node + "/" + Dockerfile + "", Args: args},
 		Ports: []string{"5173:5173", "5174:5174"},
@@ -205,9 +208,57 @@ func Create() error {
 	if CreateSphinx {
 		file.addSphinxSerice()
 	}
-	out, err := yaml.Marshal(file)
+	return file.Save()
+}
+
+func (c *ComposeFile) Save() error {
+	out, err := yaml.Marshal(c)
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(config.DockerComposeFileName, out, 0644)
+	return os.WriteFile(config.GetDockerComposeFilePath(), out, 0644)
+}
+
+func Load() (*ComposeFile, error) {
+	data, err := os.ReadFile(config.GetDockerComposeFilePath())
+	if err != nil {
+		return nil, err
+	}
+
+	compose := &ComposeFile{
+		Services: utils.NewOrderedMap[string, Service](),
+	}
+
+	err = yaml.Unmarshal(data, compose)
+	if err != nil {
+		return nil, err
+	}
+
+	return compose, nil
+}
+
+func PublishNodeService() error {
+	compose, err := Load()
+	if err != nil {
+		return err
+	}
+	if compose.Services.Has(Node) {
+		return nil
+	}
+	compose.addNodeSerice()
+
+	return compose.Save()
+}
+
+func PublishSphinxService() error {
+	compose, err := Load()
+	if err != nil {
+		return err
+	}
+	if compose.Services.Has(Sphinx) {
+		return nil
+	}
+	compose.addSphinxSerice()
+
+	return compose.Save()
 }

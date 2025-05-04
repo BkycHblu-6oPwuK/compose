@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -46,7 +47,8 @@ func initSiteDir() error {
 	return nil
 }
 
-func initNodeDir(path string) error {
+func initNodeDir() error {
+	path := filepath.Join(config.GetSiteDirPath(), yaml.NodePath)
 	if utils.FileIsExists(path) {
 		return nil
 	}
@@ -54,6 +56,60 @@ func initNodeDir(path string) error {
 	err := os.MkdirAll(path, 0755)
 	if err != nil {
 		return fmt.Errorf("ошибка создания директории %s: %v", path, err)
+	}
+	return nil
+}
+
+func initNode() error {
+	yaml.NodePath = os.Getenv(config.NodePathVarName)
+	if yaml.NodePath == "" {
+		yaml.NodePath = utils.ReadPath("Введите путь до директории с package.json относительно директории сайта. Например (local/js/vite или пустая строка): ")
+	}
+	yaml.NodePath = strings.TrimPrefix(yaml.NodePath, config.SitePathInContainer + "/")
+	return initNodeDir()
+}
+
+func initEnvFile(recreate bool) error {
+	envFileName := config.GetEnvFilePath()
+	if recreate || !utils.FileIsExists(envFileName) {
+		outFile, err := os.Create(envFileName)
+		if err != nil {
+			return err
+		}
+		defer outFile.Close()
+		if yaml.PhpVersion == "" {
+			yaml.PhpVersion = os.Getenv(config.PhpVersionVarName)
+		}
+		if yaml.MysqlVersion == "" {
+			yaml.MysqlVersion = os.Getenv(config.MysqlVersionVarName)
+		}
+		if yaml.NodeVersion == "" {
+			yaml.NodeVersion = os.Getenv(config.NodeVersionVarName)
+		}
+		if yaml.NodePath == "" {
+			yaml.NodePath = os.Getenv(config.NodePathVarName)
+		}
+		if !strings.HasPrefix(yaml.NodePath, config.SitePathInContainer) {
+			yaml.NodePath = filepath.Join(config.SitePathInContainer, yaml.NodePath)
+		}
+		data := []string{
+			config.PhpVersionVarName + "=" + yaml.PhpVersion,
+			config.MysqlVersionVarName + "=" + yaml.MysqlVersion,
+			config.NodeVersionVarName + "=" + yaml.NodeVersion,
+			config.NodePathVarName + "=" + yaml.NodePath,
+		}
+		if(yaml.SitePath == "") {
+			yaml.SitePath = os.Getenv(config.SitePathVarName)
+		}
+		if yaml.SitePath != "" {
+			data = append(data, config.SitePathVarName+"="+yaml.SitePath)
+		}
+		for _, line := range data {
+			_, err := outFile.WriteString(line + "\n")
+			if err != nil {
+				return err
+			}
+		}
 	}
 	return nil
 }
@@ -72,16 +128,30 @@ func initDockerComposeFile() error {
 		}
 	}
 
-	_, yaml.PhpVersion = utils.ChooseFromList("Выберите версию php: ", yaml.AvailablePhpVersions[:])
-	_, yaml.MysqlVersion = utils.ChooseFromList("Выберите версию php: ", yaml.AvailableMysqlVersions[:])
+	phpVersion := os.Getenv(config.PhpVersionVarName)
+	mysqlVersion := os.Getenv(config.MysqlVersionVarName)
+	isRecreate := false
+	if phpVersion == "" {
+		_, phpVersion = utils.ChooseFromList("Выберите версию php: ", yaml.AvailablePhpVersions[:])
+		isRecreate = true
+	}
+	if mysqlVersion == "" {
+		_, mysqlVersion = utils.ChooseFromList("Выберите версию mysql: ", yaml.AvailableMysqlVersions[:])
+		isRecreate = true
+	}
+	yaml.PhpVersion = phpVersion
+	yaml.MysqlVersion = mysqlVersion
 
 	if utils.AskYesNo("Добавлять node js?") {
 		yaml.CreateNode = true
-		yaml.NodePath = utils.ReadPath("Введите путь до директории с package.json относительно директории сайта. Например (local/js/vite или пустая строка): ")
-		initNodeDir(filepath.Join(config.GetSiteDirPath(), yaml.NodePath))
+		isRecreate = true
+		initNode()
 	}
 
 	yaml.CreateSphinx = utils.AskYesNo("Добавлять sphinx?")
-
+	err := initEnvFile(isRecreate)
+	if err != nil {
+		return err
+	}
 	return yaml.Create()
 }

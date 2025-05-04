@@ -4,7 +4,7 @@ server {
 
     include /etc/nginx/conf.d/snippets/composite.conf;
     include /etc/nginx/conf.d/snippets/location.conf;
-    include /etc/nginx/conf.d/snippets/${domain}.conf;
+    include /etc/nginx/conf.d/snippets/{{.Domain}}.conf;
 
     #return 301 https://$host$request_uri;
 }
@@ -13,8 +13,8 @@ server {
     listen 443 ssl;
     listen [::]:443 ssl;
 
-    ssl_certificate /etc/nginx/certs/${domain}/nginx.crt;
-    ssl_certificate_key /etc/nginx/certs/${domain}/nginx.key;
+    ssl_certificate /etc/nginx/certs/{{.Domain}}/nginx.crt;
+    ssl_certificate_key /etc/nginx/certs/{{.Domain}}/nginx.key;
     ssl_client_certificate /etc/nginx/certs/rootCA.crt;
     #ssl_verify_client off;
 
@@ -31,12 +31,12 @@ server {
     resolver_timeout 5s;
     # Disable strict transport security for now. You can uncomment the following
     # line if you understand the implications.
-    #add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload";
+    #add_header Strict-Transport-Security "max-age=63072000; includeSub.domain; preload";
     add_header X-Frame-Options ALLOWALL;
     add_header X-Content-Type-Options nosniff;
     add_header X-XSS-Protection "1; mode=block";
 
     include /etc/nginx/conf.d/snippets/composite.conf;
     include /etc/nginx/conf.d/snippets/location.conf;
-    include /etc/nginx/conf.d/snippets/${domain}.conf;
+    include /etc/nginx/conf.d/snippets/{{.Domain}}.conf;
 }

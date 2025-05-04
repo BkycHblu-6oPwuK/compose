@@ -29,13 +29,13 @@ RUN apt-get update && apt-get install -y \
     wget \
     cron \
     supervisor \
-#imagick    libmagickwand-dev imagemagick \
+    libmagickwand-dev imagemagick \
     gifsicle && \
     update-ca-certificates && \
-#imagick    pecl install imagick && \
-#xdebug    pecl install xdebug-3.1.6 && \
-#imagick    docker-php-ext-enable imagick && \
-#xdebug    docker-php-ext-enable xdebug && \
+    pecl install imagick && \
+    pecl install xdebug-3.1.6 && \
+    docker-php-ext-enable imagick && \
+    docker-php-ext-enable xdebug && \
     docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp --with-xpm && \
     docker-php-ext-install pdo_mysql mysqli bcmath gd zip
 
@@ -68,7 +68,5 @@ RUN sed -i 's/\r$//' /usr/local/bin/create_simlink.sh && \
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 WORKDIR /var/www
-
-#ssh RUN mkdir ~/.ssh && ln -s /run/secrets/host_ssh_key ~/.ssh/id_rsa
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

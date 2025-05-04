@@ -62,7 +62,6 @@ func Create(domainName, rootPath string) error {
 		"nginxAppConf": filepath.Join(dockerPath, yaml.App, yaml.Nginx, domainName+".conf"),
 	}
 
-	// Шаблоны
 	if err := renderStub(stubDomainCertsFile, paths["domainExt"], ctx); err != nil {
 		return err
 	}
@@ -79,7 +78,6 @@ func Create(domainName, rootPath string) error {
 		return err
 	}
 
-	// Генерация ключей и сертификатов
 	if err := execOpenSSL(paths["nginxKey"], paths["nginxCsr"], "nginx", paths["nginxCrt"], paths["nginxExt"]); err != nil {
 		return err
 	}
@@ -96,7 +94,7 @@ func renderStub(stubPath, outPath string, ctx certContext) error {
 		return fmt.Errorf("ошибка при чтении шаблона: %w", err)
 	}
 
-	tmpl, err := template.New(filepath.Base(stubPath)).Delims("${", "}").Parse(string(content))
+	tmpl, err := template.New(filepath.Base(stubPath)).Parse(string(content))
 	if err != nil {
 		return fmt.Errorf("ошибка при парсинге шаблона: %w", err)
 	}

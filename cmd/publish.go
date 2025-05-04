@@ -2,18 +2,27 @@ package cmd
 
 import (
 	"docky/internal"
+	"docky/yaml"
 	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
 )
 
+var service string
+
 // Определяем команду `publish`
 var publishCmd = &cobra.Command{
 	Use:   "publish",
-	Short: "Публикует файлы",
+	Short: "Публикует файлы конфигурации",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := internal.PublishFiles()
+		var err error = nil
+		if service != "" {
+			err = publishService(service)
+		} else {
+			err = internal.PublishFiles()
+		}
+
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
 		}
@@ -22,5 +31,24 @@ var publishCmd = &cobra.Command{
 }
 
 func init() {
+	publishCmd.Flags().StringVar(&service, "service", "", "Опубликовать сервис в docker-compose")
 	rootCmd.AddCommand(publishCmd)
+}
+
+func publishService(service string) error {
+	if service == "node" {
+		err := yaml.PublishNodeService()
+		if err != nil {
+			return err
+		}
+		err = initNode()
+		if err != nil {
+			return err
+		}
+		return initEnvFile(true)
+	} else if service == "sphinx" {
+		return yaml.PublishSphinxService()
+	} else {
+		return fmt.Errorf("неизвестный сервис: %s", service)
+	}
 }

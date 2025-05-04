@@ -3,11 +3,14 @@ package cmd
 import (
 	"docky/config"
 	"docky/internal"
+	"docky/yaml"
 	"errors"
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -34,7 +37,6 @@ func init() {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
 	}
-	fmt.Println("🚀 Запуск docky...")
 }
 
 func Execute() error {
@@ -56,10 +58,16 @@ func execDockerCompose(args []string) error {
 	if err != nil {
 		return err
 	}
+	sitePath := config.GetSiteDirPath()
 	os.Setenv(config.UserGroupVarName, strconv.Itoa(os.Getegid()))
 	os.Setenv(config.DockerPathVarName, config.GetCurrentDockerFileDirPath())
-	os.Setenv(config.SitePathVarName, config.GetSiteDirPath())
-	cmd := exec.Command(dockerCmd[0], append(dockerCmd[1:], args...)...)
+	os.Setenv(config.SitePathVarName, sitePath)
+	yaml.NodePath = filepath.Join(sitePath, strings.TrimPrefix(os.Getenv(config.NodePathVarName), config.SitePathInContainer + "/"))
+	initSiteDir()
+	if yaml.NodePath != "" {
+		initNodeDir()
+	}
+ 	cmd := exec.Command(dockerCmd[0], append(dockerCmd[1:], args...)...)
 	cmd.Dir = config.GetWorkDirPath()
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
