@@ -2,8 +2,8 @@ FROM nginx:latest
 
 ARG USERGROUP
 
-RUN groupadd --force -g $USERGROUP nginxuser
-RUN useradd -ms /bin/bash --no-user-group -g $USERGROUP -u $USERGROUP nginxuser
+RUN groupadd --force -g $USERGROUP docky && \
+    useradd -ms /bin/bash --no-user-group -g $USERGROUP -u $USERGROUP docky
 
 COPY nginx/certs/ /usr/local/share/ca-certificates/
 COPY nginx/certs/ /etc/nginx/certs

@@ -19,7 +19,9 @@ RUN apt-get update && apt-get install -y \
     libwebp-dev \
     libxpm-dev \
     zip \
-    unzip \
+    unzip
+
+RUN apt-get install -y \ 
     jpegoptim \
     optipng \
     ghostscript \
@@ -30,8 +32,9 @@ RUN apt-get update && apt-get install -y \
     cron \
     supervisor \
     libmagickwand-dev imagemagick \
-    gifsicle && \
-    update-ca-certificates && \
+    gifsicle
+    
+RUN update-ca-certificates && \
     pecl install imagick && \
     pecl install xdebug-3.1.6 && \
     docker-php-ext-enable imagick && \

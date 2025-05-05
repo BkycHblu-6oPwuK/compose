@@ -26,7 +26,7 @@ var createSiteModuleCmd = &cobra.Command{
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
 		}
-		fmt.Println("✅")
+		fmt.Println("✅ сайт создан!")
 	},
 }
 
@@ -38,7 +38,7 @@ var createDomainModuleCmd = &cobra.Command{
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
 		}
-		fmt.Println("✅")
+		fmt.Println("✅ домен создан!")
 	},
 }
 
