@@ -66,8 +66,44 @@ func createSite() error {
 	if err != nil {
 		return err
 	}
+	err = pushToSimlinks(domain)
+	if err != nil {
+		return err
+	}
 	err = hosts.PushToHosts()
 	return err
+}
+
+func pushToSimlinks(domain string) error {
+	var file *os.File
+	var err error
+	filePath := filepath.Join(config.GetDockerFilesDirPath(), "app", "simlinks")
+
+	if !utils.FileIsExists(filePath) {
+		file, err = os.Create(filePath)
+	} else {
+		file, err = os.OpenFile(filePath, os.O_WRONLY|os.O_APPEND, 0644)
+	}
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	base := config.SitePathInContainer
+
+	lines := []string{
+		fmt.Sprintf("%s/bitrix %s/%s/bitrix\n", base, base, domain),
+		fmt.Sprintf("%s/local %s/%s/local\n", base, base, domain),
+		fmt.Sprintf("%s/upload %s/%s/upload\n", base, base, domain),
+	}
+
+	for _, line := range lines {
+		if _, err := file.WriteString(line); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func createDomain() error {

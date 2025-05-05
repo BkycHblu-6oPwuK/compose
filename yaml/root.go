@@ -263,6 +263,7 @@ func PublishSphinxService() error {
 		return nil
 	}
 	compose.addSphinxSerice()
+	compose.Volumes[Sphinx_data] = Volume{}
 
 	return compose.Save()
 }
