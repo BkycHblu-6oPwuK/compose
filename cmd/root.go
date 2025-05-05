@@ -4,14 +4,11 @@ import (
 	"docky/config"
 	"docky/internal"
 	"docky/utils"
-	"docky/yaml"
 	"errors"
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strconv"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -70,11 +67,6 @@ func execDockerCompose(args []string) error {
 	os.Setenv(config.UserGroupVarName, strconv.Itoa(os.Getegid()))
 	os.Setenv(config.DockerPathVarName, config.GetCurrentDockerFileDirPath())
 	os.Setenv(config.SitePathVarName, sitePath)
-	yaml.NodePath = filepath.Join(sitePath, strings.TrimPrefix(os.Getenv(config.NodePathVarName), config.SitePathInContainer + "/"))
-	initSiteDir()
-	if yaml.NodePath != "" {
-		initNodeDir()
-	}
  	cmd := exec.Command(dockerCmd[0], append(dockerCmd[1:], args...)...)
 	cmd.Dir = config.GetWorkDirPath()
 	cmd.Stdout = os.Stdout
