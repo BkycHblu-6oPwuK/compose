@@ -1,0 +1,14 @@
+  mysql:
+    image: mysql:${mysql_version}
+    restart: always
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ${docker_path}/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    environment:
+      MYSQL_DATABASE: site
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - 8102:3306
+    networks:
+      - compose
+    container_name: mysql

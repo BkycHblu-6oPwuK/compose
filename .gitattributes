@@ -1,2 +1,2 @@
-src/bin/* text eol=lf
-src/_docker/bin/* text eol=lf
+scripts/* text eol=lf
+internal/files/_docker/bin/* text eol=lf
