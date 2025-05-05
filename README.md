@@ -301,7 +301,7 @@ docky init
 docky publish
 docky publish --service node|sphinx
 ```
-- `clean-cache` - очищает кэш директории скрипта, в не храняться файлы конфигурации, докерфайлы
+- `clean-cache` - очищает кэш директории скрипта, в ней храняться файлы конфигурации, докерфайлы
 ```bash
 docky clean-cache
 ```
