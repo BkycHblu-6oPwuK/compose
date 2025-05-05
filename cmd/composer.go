@@ -13,6 +13,7 @@ var composerCmd = &cobra.Command{
 	Short:              "Запускает composer команду в контейнере " + yaml.App,
 	DisableFlagParsing: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		validateWorkDir()
 		if err := execComposerInContainer(args); err != nil {
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
 			os.Exit(1)

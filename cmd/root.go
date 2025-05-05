@@ -3,6 +3,7 @@ package cmd
 import (
 	"docky/config"
 	"docky/internal"
+	"docky/utils"
 	"docky/yaml"
 	"errors"
 	"fmt"
@@ -36,6 +37,13 @@ func init() {
 	err := internal.ExtractFilesInCache()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
+	}
+}
+
+func validateWorkDir() {
+	if !utils.FileIsExists(config.GetWorkDirPath()) {
+		fmt.Fprintf(os.Stderr, "❌ Ошибка: не инициализирован docker-compose.yml")
+		os.Exit(1)
 	}
 }
 

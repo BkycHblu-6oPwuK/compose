@@ -17,6 +17,7 @@ var upgradeCmd = &cobra.Command{
 	Use:   "upgrade",
 	Short: "Изменяет docker-compose.yml под новый формат",
 	Run: func(cmd *cobra.Command, args []string) {
+		validateWorkDir()
 		err := upgrade()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)

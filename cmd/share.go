@@ -15,6 +15,7 @@ var shareCmd = &cobra.Command{
 	Short:              "Туннелирование локального сайта",
 	DisableFlagParsing: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		validateWorkDir()
 		if err := share(args); err != nil {
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
 			os.Exit(1)

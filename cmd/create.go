@@ -22,6 +22,7 @@ var createSiteModuleCmd = &cobra.Command{
 	Use:   "site",
 	Short: "Создает новый сайт (директория, сертификаты, запись в hosts)",
 	Run: func(cmd *cobra.Command, args []string) {
+		validateWorkDir()
 		err := createSite()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)

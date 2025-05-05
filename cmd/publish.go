@@ -15,6 +15,7 @@ var publishCmd = &cobra.Command{
 	Use:   "publish",
 	Short: "Публикует файлы конфигурации",
 	Run: func(cmd *cobra.Command, args []string) {
+		validateWorkDir()
 		var err error = nil
 		if service != "" {
 			err = publishService(service)

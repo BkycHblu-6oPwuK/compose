@@ -13,6 +13,7 @@ var npxCmd = &cobra.Command{
 	Short:              "Запускает npx команду в контейнере " + yaml.Node,
 	DisableFlagParsing: true,
 	Run: func(cmd *cobra.Command, args []string) {
+		validateWorkDir()
 		if err := execNpxInContainer(args); err != nil {
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
 			os.Exit(1)
