@@ -70,7 +70,7 @@ docky publish
 
 Сервер одинаково настроен на работу как по http, так и по https.
 
-Более подробно - https://github.com/BkycHblu-6oPwuK/compose/tree/main/src/_docker/nginx
+Более подробно - https://github.com/BkycHblu-6oPwuK/compose/tree/main/internal/files/_docker/nginx
 
 ## php
 
