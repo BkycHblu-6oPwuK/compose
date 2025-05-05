@@ -24,7 +24,7 @@ type Service struct {
 	Environment   map[string]string `yaml:"environment,omitempty"`
 	Dependencies  []string          `yaml:"depends_on,omitempty"`
 	Networks      []string          `yaml:"networks,omitempty"`
-	Command       interface{}            `yaml:"command,omitempty"`
+	Command       interface{}       `yaml:"command,omitempty"`
 	ExstraHosts   []string          `yaml:"extra_hosts,omitempty"`
 	Secrets       []string          `yaml:"secrets,omitempty"`
 	ContainerName string            `yaml:"container_name,omitempty"`
@@ -115,8 +115,12 @@ func (c *ComposeFile) addAppService() *ComposeFile {
 			"${" + config.DockerPathVarName + "}/" + App + "/php-fpm.conf:/usr/local/etc/php-fpm.d/zzzzwww.conf",
 			"${" + config.DockerPathVarName + "}/" + App + "/nginx:/etc/nginx/conf.d",
 		},
-		ExstraHosts:   []string{"host.docker.internal:host-gateway"},
-		Networks:      []string{Compose},
+		ExstraHosts: []string{"host.docker.internal:host-gateway"},
+		Networks:    []string{Compose},
+		Environment: map[string]string{
+			"XDEBUG_TRIGGER": "testTrig",
+			"PHP_IDE_CONFIG": "serverName=xdebugServer",
+		},
 		ContainerName: App,
 	}
 	return c.addService(App, service)

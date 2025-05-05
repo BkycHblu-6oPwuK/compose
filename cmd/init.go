@@ -26,7 +26,7 @@ var initCmd = &cobra.Command{
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
 			return
 		}
-		fmt.Println("✅ инициализация проекта завершена!")
+		fmt.Println("✅ Инициализация проекта завершена!")
 	},
 }
 

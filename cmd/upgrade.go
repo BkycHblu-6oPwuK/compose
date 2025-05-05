@@ -21,7 +21,7 @@ var upgradeCmd = &cobra.Command{
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
 		}
-		fmt.Println("✅ Кэш очищен!")
+		fmt.Println("✅ docker-compose.yml обновлён, проверьте его на наличие ошибок. Проверьте файл .env на наличие новых переменных окружения. Старый файл docker-compose.yml переименован.")
 	},
 }
 
