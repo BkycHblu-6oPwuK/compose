@@ -132,7 +132,7 @@ func (c *ComposeFile) addMysqlSerice() *ComposeFile {
 		Restart: "always",
 		Ports:   []string{"8102:3306"},
 		Volumes: []string{
-			Mysql_data + ":" + config.SitePathInContainer,
+			Mysql_data + ":/var/lib/mysql",
 			"${" + config.DockerPathVarName + "}/" + Mysql + "/my.cnf:/etc/mysql/conf.d/my.cnf",
 		},
 		Networks: []string{Compose},
