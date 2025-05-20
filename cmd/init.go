@@ -109,6 +109,12 @@ func initEnvFile(yamlConfig *config.YamlConfig, recreate bool) error {
 		if _, err := outFile.WriteString(line + "\n"); err != nil {
 			return err
 		}
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) == 2 {
+			if err := os.Setenv(parts[0], parts[1]); err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil
@@ -201,6 +207,10 @@ func initLaravel() error {
 		}
 	}
 
+	if err := execDockerCompose([]string{"build", yaml.App}); err != nil {
+		return err
+	}
+
 	dir := "laravel"
 	execArgs := []string{
 		"run", "--rm",
@@ -219,6 +229,9 @@ func initLaravel() error {
 	}
 
 	if utils.FileIsExists(filepath.Join(siteDir, "package.json")) {
+		if err := execDockerCompose([]string{"build", yaml.Node}); err != nil {
+			return err
+		}
 		execArgs := []string{
 			"run", "--rm",
 			"--user", "docky", "--entrypoint", "npm",
