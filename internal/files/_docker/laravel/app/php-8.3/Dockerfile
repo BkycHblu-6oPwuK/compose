@@ -22,11 +22,14 @@ RUN apt-get update && apt-get install -y \
     libxpm-dev \
     zip \
     unzip \
-    ca-certificates \
+    ca-certificates
+
+RUN apt-get install -y libmagickwand-dev imagemagick 
+
+RUN apt-get install -y \
     wget \
     nginx \
     supervisor \
-    libmagickwand-dev imagemagick \
     gifsicle \
     jpegoptim \
     optipng \
