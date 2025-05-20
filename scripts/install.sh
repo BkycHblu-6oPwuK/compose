@@ -13,5 +13,5 @@ curl https://raw.githubusercontent.com/BkycHblu-6oPwuK/compose/main/build/docky 
 }
 
 chmod +x "$INSTALL_DIR/$BINARY_NAME"
-$BINARY_NAME clean-cache
+"$INSTALL_DIR/$BINARY_NAME" clean-cache
 echo "Successfully installed $BINARY_NAME to $INSTALL_DIR"
