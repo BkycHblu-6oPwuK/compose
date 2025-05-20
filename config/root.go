@@ -13,20 +13,24 @@ import (
 )
 
 const (
-	ScriptName            string = "docky"
-	SiteDirName           string = "site" // директория с проектом
-	DockerFilesDirName    string = "_docker"
-	LocalHostsFileName    string = "hosts"
-	DockerComposeFileName string = "docker-compose.yml"
-	UserGroupVarName      string = "USERGROUP"
-	DockerPathVarName     string = "DOCKER_PATH"
-	PhpVersionVarName     string = "PHP_VERSION"
-	MysqlVersionVarName   string = "MYSQL_VERSION"
-	NodeVersionVarName    string = "NODE_VERSION"
-	SitePathVarName       string = "SITE_PATH"
-	NodePathVarName       string = "NODE_PATH"
-	SitePathInContainer   string = "/var/www"
-	EnvFile               string = ".env"
+	ScriptName             string = "docky"
+	SiteDirName            string = "site" // директория с проектом
+	DockerFilesDirName     string = "_docker"
+	Bitrix                 string = "bitrix"
+	Laravel                string = "laravel"
+	LocalHostsFileName     string = "hosts"
+	DockerComposeFileName  string = "docker-compose.yml"
+	UserGroupVarName       string = "USERGROUP"
+	DockyFrameworkVarName  string = "DOCKY_FRAMEWORK"
+	DockerPathVarName      string = "DOCKER_PATH"
+	PhpVersionVarName      string = "PHP_VERSION"
+	MysqlVersionVarName    string = "MYSQL_VERSION"
+	PostgresVersionVarName string = "POSTGRES_VERSION"
+	NodeVersionVarName     string = "NODE_VERSION"
+	SitePathVarName        string = "SITE_PATH"
+	NodePathVarName        string = "NODE_PATH"
+	SitePathInContainer    string = "/var/www"
+	EnvFile                string = ".env"
 )
 
 var (
@@ -82,7 +86,7 @@ func GetWorkDirPath() string {
 }
 
 func GetSiteDirPath() string {
-	sitePath := os.Getenv(SitePathVarName)
+	sitePath := GetYamlConfig().SitePath
 	if sitePath == "" {
 		return filepath.Join(GetWorkDirPath(), SiteDirName)
 	}
@@ -93,11 +97,26 @@ func GetSiteDirPath() string {
 
 	return filepath.Join(GetWorkDirPath(), sitePath)
 }
+func GetUserGroup() string {
+	userGroup := GetYamlConfig().UserGroup
+	if userGroup == "" {
+		userGroup = strconv.Itoa(os.Getegid())
+	}
+	return userGroup
+}
+func GetCurFramework() string {
+	frameworkName := os.Getenv(DockyFrameworkVarName)
+	if frameworkName != "" {
+		return frameworkName
+	}
+
+	return Bitrix
+}
 func GetDockerFilesDirPath() string {
 	return filepath.Join(GetWorkDirPath(), DockerFilesDirName)
 }
 func GetDockerFilesDirPathInCache() string {
-	return filepath.Join(GetScriptCacheDir(), DockerFilesDirName)
+	return filepath.Join(GetScriptCacheDir(), DockerFilesDirName, GetCurFramework())
 }
 func GetCurrentDockerFileDirPath() string {
 	path := GetDockerFilesDirPath()

@@ -23,7 +23,7 @@ func AskYesNo(prompt string) bool {
 
 		if input == "y" {
 			return true
-		} else if input == "n" {
+		} else if input == "n" || input == "" {
 			return false
 		} else {
 			fmt.Println("Пожалуйста, введите 'Yy' или 'Nn'.")
@@ -51,7 +51,6 @@ func ChooseFromList(prompt string, options []string) (int, string) {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		fmt.Println(prompt)
 		for i, opt := range options {
 			fmt.Printf("  %d) %s\n", i+1, opt)
 		}

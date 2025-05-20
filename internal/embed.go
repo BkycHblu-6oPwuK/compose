@@ -94,7 +94,7 @@ func PublishFiles() error {
 		}
 	}
 
-	err = extractAllFiles(targetDir, filepath.Join(rootDir, config.DockerFilesDirName))
+	err = extractAllFiles(targetDir, filepath.Join(rootDir, config.DockerFilesDirName, config.GetCurFramework()))
 	if err != nil {
 		return err
 	}

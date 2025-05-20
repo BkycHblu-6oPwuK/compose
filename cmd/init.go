@@ -26,6 +26,12 @@ var initCmd = &cobra.Command{
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
 			return
 		}
+		yamlConfig := config.GetYamlConfig()
+		switch yamlConfig.FrameworkName {
+		case config.Laravel:
+			fmt.Println("Инициализация ларавел")
+			initLaravel()
+		}
 		fmt.Println("✅ Инициализация проекта завершена!")
 	},
 }
@@ -47,12 +53,11 @@ func initSiteDir() error {
 	return nil
 }
 
-func initNodeDir() error {
-	path := filepath.Join(config.GetSiteDirPath(), yaml.NodePath)
+func initNodeDir(yamlConfig *config.YamlConfig) error {
+	path := filepath.Join(config.GetSiteDirPath(), yamlConfig.NodePath)
 	if utils.FileIsExists(path) {
 		return nil
 	}
-
 	err := os.MkdirAll(path, 0755)
 	if err != nil {
 		return fmt.Errorf("ошибка создания директории %s: %v", path, err)
@@ -60,98 +65,169 @@ func initNodeDir() error {
 	return nil
 }
 
-func initNode() error {
-	yaml.NodePath = os.Getenv(config.NodePathVarName)
-	if yaml.NodePath == "" {
-		yaml.NodePath = utils.ReadPath("Введите путь до директории с package.json относительно директории сайта. Например (local/js/vite или пустая строка): ")
+func initNode(yamlConfig *config.YamlConfig) error {
+	if yamlConfig.NodePath == "" {
+		switch yamlConfig.FrameworkName {
+		case config.Bitrix:
+			yamlConfig.NodePath = utils.ReadPath("Введите путь до директории с package.json относительно директории сайта. Например (local/js/vite или пустая строка): ")
+		}
 	}
-	yaml.NodePath = strings.TrimPrefix(yaml.NodePath, config.SitePathInContainer + "/")
-	return initNodeDir()
+	yamlConfig.NodePath = strings.TrimPrefix(yamlConfig.NodePath, config.SitePathInContainer)
+	return initNodeDir(yamlConfig)
 }
 
-func initEnvFile(recreate bool) error {
+func initEnvFile(yamlConfig *config.YamlConfig, recreate bool) error {
 	envFileName := config.GetEnvFilePath()
-	if recreate || !utils.FileIsExists(envFileName) {
-		outFile, err := os.Create(envFileName)
-		if err != nil {
+	if !recreate && utils.FileIsExists(envFileName) {
+		return nil
+	}
+
+	outFile, err := os.Create(envFileName)
+	if err != nil {
+		return err
+	}
+	defer outFile.Close()
+
+	if !strings.HasPrefix(yamlConfig.NodePath, config.SitePathInContainer) {
+		yamlConfig.NodePath = filepath.Join(config.SitePathInContainer, yamlConfig.NodePath)
+	}
+
+	data := []string{
+		config.DockyFrameworkVarName + "=" + yamlConfig.FrameworkName,
+		config.PhpVersionVarName + "=" + yamlConfig.PhpVersion,
+		config.MysqlVersionVarName + "=" + yamlConfig.MysqlVersion,
+		config.PostgresVersionVarName + "=" + yamlConfig.PostgresVersion,
+		config.NodeVersionVarName + "=" + yamlConfig.NodeVersion,
+		config.NodePathVarName + "=" + yamlConfig.NodePath,
+	}
+
+	if yamlConfig.SitePath != "" {
+		data = append(data, config.SitePathVarName+"="+yamlConfig.SitePath)
+	}
+
+	for _, line := range data {
+		if _, err := outFile.WriteString(line + "\n"); err != nil {
 			return err
 		}
-		defer outFile.Close()
-		if yaml.PhpVersion == "" {
-			yaml.PhpVersion = os.Getenv(config.PhpVersionVarName)
-		}
-		if yaml.MysqlVersion == "" {
-			yaml.MysqlVersion = os.Getenv(config.MysqlVersionVarName)
-		}
-		if yaml.NodeVersion == "" {
-			yaml.NodeVersion = os.Getenv(config.NodeVersionVarName)
-		}
-		if yaml.NodePath == "" {
-			yaml.NodePath = os.Getenv(config.NodePathVarName)
-		}
-		if !strings.HasPrefix(yaml.NodePath, config.SitePathInContainer) {
-			yaml.NodePath = filepath.Join(config.SitePathInContainer, yaml.NodePath)
-		}
-		data := []string{
-			config.PhpVersionVarName + "=" + yaml.PhpVersion,
-			config.MysqlVersionVarName + "=" + yaml.MysqlVersion,
-			config.NodeVersionVarName + "=" + yaml.NodeVersion,
-			config.NodePathVarName + "=" + yaml.NodePath,
-		}
-		if(yaml.SitePath == "") {
-			yaml.SitePath = os.Getenv(config.SitePathVarName)
-		}
-		if yaml.SitePath != "" {
-			data = append(data, config.SitePathVarName+"="+yaml.SitePath)
-		}
-		for _, line := range data {
-			_, err := outFile.WriteString(line + "\n")
-			if err != nil {
-				return err
-			}
-		}
 	}
+
 	return nil
+}
+
+func getOrChoose(prompt, value string, options []string, isRecreate *bool) string {
+	if value == "" {
+		_, value = utils.ChooseFromList(prompt, options)
+		*isRecreate = true
+	}
+	return value
 }
 
 func initDockerComposeFile() error {
 	composeFilePath := config.GetDockerComposeFilePath()
 	if utils.FileIsExists(composeFilePath) {
-		fmt.Println()
-		if utils.AskYesNo("Файл docker-compose.yml уже существует, создать новый?") {
-			err := os.Rename(composeFilePath, composeFilePath+config.Timestamp)
-			if err != nil {
-				return err
-			}
-		} else {
+		if !utils.AskYesNo("Файл docker-compose.yml уже существует, создать новый?") {
 			return nil
+		}
+		if err := os.Rename(composeFilePath, composeFilePath+config.Timestamp); err != nil {
+			return err
 		}
 	}
 
-	phpVersion := os.Getenv(config.PhpVersionVarName)
-	mysqlVersion := os.Getenv(config.MysqlVersionVarName)
-	isRecreate := false
-	if phpVersion == "" {
-		_, phpVersion = utils.ChooseFromList("Выберите версию php: ", yaml.AvailablePhpVersions[:])
+	var isRecreate bool
+	yamlConfig := config.GetYamlConfig()
+	if yamlConfig.FrameworkName == "" {
+		_, yamlConfig.FrameworkName = utils.ChooseFromList("Ваш фреймворк: ", yaml.AvailableFramework[:])
 		isRecreate = true
 	}
-	if mysqlVersion == "" {
-		_, mysqlVersion = utils.ChooseFromList("Выберите версию mysql: ", yaml.AvailableMysqlVersions[:])
-		isRecreate = true
-	}
-	yaml.PhpVersion = phpVersion
-	yaml.MysqlVersion = mysqlVersion
+	yamlFile := yaml.NewYamlFile(yamlConfig)
 
-	if utils.AskYesNo("Добавлять node js?") {
-		yaml.CreateNode = true
-		isRecreate = true
-		initNode()
+	yamlConfig.PhpVersion = getOrChoose("Выберите версию php: ", yamlConfig.PhpVersion, yamlFile.GetAvailableVersions(yaml.App), &isRecreate)
+
+	switch yamlConfig.FrameworkName {
+	case config.Laravel:
+		_, err := isDockerComposeAvailable()
+		if err != nil {
+			return err
+		}
+		_, yamlConfig.DbType = utils.ChooseFromList("Выберите базу данных: ", yaml.AvailableDb[:])
+
+		switch yamlConfig.DbType {
+		case yaml.Mysql:
+			yamlConfig.MysqlVersion = getOrChoose("Выберите версию mysql: ", yamlConfig.MysqlVersion, yamlFile.GetAvailableVersions(yaml.Mysql), &isRecreate)
+		case yaml.Postgres:
+			yamlConfig.PostgresVersion = getOrChoose("Выберите версию postgres: ", yamlConfig.PostgresVersion, yamlFile.GetAvailableVersions(yaml.Postgres), &isRecreate)
+		}
+
+		_, serverCache := utils.ChooseFromList("Выберите сервер кеширования: ", append(yaml.AvailableServerCache[:], "Пропуск"))
+		if serverCache != "Пропуск" {
+			yamlConfig.ServerCache = serverCache
+		}
+
+		yamlConfig.CreateNode = true
+
+	default:
+		yamlConfig.MysqlVersion = getOrChoose("Выберите версию mysql: ", yamlConfig.MysqlVersion, yamlFile.GetAvailableVersions(yaml.Mysql), &isRecreate)
+
+		if utils.AskYesNo("Добавлять node js?") {
+			yamlConfig.CreateNode = true
+			isRecreate = true
+			initNode(yamlConfig)
+		}
+
+		yamlConfig.CreateSphinx = utils.AskYesNo("Добавлять sphinx?")
 	}
 
-	yaml.CreateSphinx = utils.AskYesNo("Добавлять sphinx?")
-	err := initEnvFile(isRecreate)
-	if err != nil {
+	if err := initEnvFile(yamlConfig, isRecreate); err != nil {
 		return err
 	}
-	return yaml.Create()
+
+	return yamlFile.Create()
+}
+
+func initLaravel() error {
+	siteDir := config.GetSiteDirPath()
+
+	siteIsEmpty := utils.IsDirEmpty(siteDir)
+	if !siteIsEmpty && !utils.AskYesNo("Директория с сайтом не пуста. Удалить всё и установить Laravel?") {
+		return nil
+	}
+
+	if !siteIsEmpty {
+		if err := os.RemoveAll(siteDir); err != nil {
+			return fmt.Errorf("не удалось очистить директорию: %w", err)
+		}
+		if err := os.MkdirAll(siteDir, 0755); err != nil {
+			return fmt.Errorf("не удалось создать директорию: %w", err)
+		}
+	}
+
+	dir := "laravel"
+	execArgs := []string{
+		"run", "--rm",
+		"--user", "docky", "--entrypoint", "php",
+		yaml.App, "/home/docky/.config/composer/vendor/bin/laravel", "new", dir,
+	}
+	if err := execDockerCompose(execArgs); err != nil {
+		return err
+	}
+
+	path := filepath.Join(siteDir, dir)
+	if utils.FileIsExists(path) {
+		if err := utils.MoveDirContents(path, siteDir); err != nil {
+			return err
+		}
+	}
+
+	if utils.FileIsExists(filepath.Join(siteDir, "package.json")) {
+		execArgs := []string{
+			"run", "--rm",
+			"--user", "docky", "--entrypoint", "npm",
+			yaml.Node, "install",
+		}
+		if err := execDockerCompose(execArgs); err != nil {
+			return err
+		}
+	}
+	downContainers()
+	return nil
 }

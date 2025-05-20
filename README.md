@@ -1,8 +1,13 @@
-# Docker Compose for Bitrix
+# Обертка под docker compose
 
-Настроенная обертка над docker compose для локальных проектов bitrix 
+Настроенная обертка над docker compose для локальных проектов Bitrix, Laravel.
 
-nginx + php (7.4, 8.2, 8.3, 8.4) + mysql + node 23 версии
+- Под Bitrix смотрите в [bitrix.md](bitrix.md)
+- Под Laravel смотрите в [laravel.md](laravel.md)
+
+А здесь общее описания работы с скриптом ```docky```
+
+## Установка
 
 Для установки можно запустить установочный скрипт с правами суперпользователя:
 
@@ -28,16 +33,6 @@ docky init
 Если docker-compose.yml уже существует, то будет предложено создать новый - в таком случае файл будет переименован и после этого вы перейдете к дальшейшей публикации нового файла, а иначе будет произведен выход.
 Сам сайт размещается в директории ```site```, которая создается в той же директории где находиться docker-compose.yml
 
-Шаги установки:
-
-1. Выбрать версию php
-2. Выбрать версию mysql - 5.7 или 8.0
-3. Устанавливать ли node.js - Y или N, если установите Y, то будет создан сервис с node js 23 версии
-    1. Если будет устанавливаться node.js, то нужно указать корневую директорию для него, то есть директория содержащая файл package.json. Путь указывается относительно корня сайта - local/js/vite или пустое поле если package.json в корне сайта.
-4. Устанавливать ли sphinx - Y или N, если установите Y, то будет создан сервис с shphinx версии 2.2.11
-
-После этого в директории где выполнялась команда появиться docker-compose.yml файл с настроенными сервисами.
-
 ## Конфигурация yml через файл .env
 
 В этом файле задается версия php, mysql, node, путь к package json и путь к сайту если необходимо заменить стандартный
@@ -45,9 +40,11 @@ docky init
 ```
 PHP_VERSION=7.4|8.2|8.3|8.4 # по сути не фактическая версия php - используется для построения пути к dockerfile в ```_docker/app/php-{PHP_VERSION}/dockerfile```, в самом докерфайле задается фактическая версия
 MYSQL_VERSION={любая версия доступная на docker hub}
+POSTGRES_VERSION={любая версия доступная на docker hub}
 NODE_VERSION={любая версия доступная по ссылке - https://deb.nodesource.com/setup_${NODE_VERSION}.x}
 NODE_PATH=/var/www/local/js/vite # здесь путь до package json в контейнере, поэтому указывайте вместе абсолютный путь. /var/www - это DOCUMENT_ROOT сайта в контейнере
 SITE_PATH={абсолютный или относительный путь к директории сайта} # указывайте если не хотите размещать сайт в директории site по умолчанию
+USERGROUP={id группы пользователя (обычно 1000), по умолчанию скрипт автоматически прокидывает, но если вы запустите скрипт из под root то будет ошибка. Тогда используйте эту переменную, либо поменяйте пользователя в консоли}
 ```
 
 ## Публикация докерфайлов и файлов конфигурации
@@ -70,11 +67,9 @@ docky publish
 
 Сервер одинаково настроен на работу как по http, так и по https.
 
-Более подробно - https://github.com/BkycHblu-6oPwuK/compose/tree/main/internal/files/_docker/nginx
+Более подробно - [certificates.md](certificates.md)
 
 ## php
-
-Доступные версии php - 7.4, 8.2, 8.3, 8.4.
 
 Конфигурации для каждых из версий находятся по пути - ``` ./_docker/app/php-{PHP_VERSION}/ ```.
 
@@ -84,63 +79,9 @@ docky publish
 
 По умолчанию установлен.
 
-Либо же проверьте установку пакетов в dockerfile 
-
-```dockerfile
-RUN pecl install xdebug && \
-    docker-php-ext-enable xdebug
-```
- 
-сервис app в docker-compose yml должен выглядеть вот так
-
-```
-app:
-    build:
-        context: ${DOCKER_PATH}
-        dockerfile: ${DOCKER_PATH}/app/php-${PHP_VERSION}/Dockerfile
-        args:
-            USERGROUP: ${USERGROUP}
-    volumes:
-        - ${SITE_PATH}:/var/www
-        - ${DOCKER_PATH}/app/php-${PHP_VERSION}/php.ini:/usr/local/etc/php/conf.d/php.ini
-        - ${DOCKER_PATH}/app/php-${PHP_VERSION}/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini # xdebug ini
-        - ${DOCKER_PATH}/app/php-fpm.conf:/usr/local/etc/php-fpm.d/zzzzwww.conf
-        - ${DOCKER_PATH}/app/nginx:/etc/nginx/conf.d
-    ports:
-        - 9000:9000
-    environment: # переенные для xdebug
-        PHP_IDE_CONFIG: serverName=xdebugServer
-        XDEBUG_TRIGGER: testTrig
-    depends_on:
-        - mysql
-    networks:
-        - compose
-    extra_hosts:
-        - host.docker.internal:host-gateway # extra host
-    container_name: app
-```
-
 публикуйте файлы конфигурации и настраивайте ```_docker/app/php-${PHP_VERSION}/xdebug.ini``` по своему усмотрению
 
-## Cron
-
-По умолчанию cron включен и выполняется задание на запуск файла ```/var/www/bitrix/modules/main/tools/cron_events.php```
-
-Если необходимо добавить задания, то сделайте публикацию докерфайлов и файлов конфигурации
-
-```bash
-docky publish
-```
-
-Запись заданий осуществляйте в:
-- `_docker/app/cron/appuser.txt` - для пользователя сайта
-- `_docker/app/cron/root.txt` - для root пользователя
-
-выполните команду
-
-```bash
-docky build
-```
+Либо же измените volume на свой xdebug.ini
 
 ## Nginx в php контейнере
 
@@ -187,18 +128,6 @@ docky pm2 {arg}
 1. командой pm2 - ```docky pm2 start server.js```
 2. настроить на запуск при запуске контейнеров - для этого добавьте команду (в сервисе node) - ``` command: sh -c "pm2 start /var/www/local/js/vite/server.js --name node-server & tail -f /dev/null" ```, здесь указывается точка входа к скрипту который будет запускаться
 
-## Почта
-
-Для отправки почты настроен SMTP клиент  - ```msmtp```
-
-Для завершения настройки вам необходимо добавить вашу почту (в поля user и from) и пароль в файл:
-
-- `_docker/app/msmtprc`
-
-По умолчанию в этом файле заготовка под почту яндекса, для других сервисов просто сделайте новый блок аккаунта на основе yandex и замените имя аккаунта в строке ```account default```, тогда ваш аккаунт будет по умолчанию использоваться при отправке почты.
-
-Если почта не отправляется или в проверке системы написано что почта не работает, то проверьте логи ```msmtp``` в контейнере, которые находятся в файле ```/home/appuser/msmtp.log```. Вероятнее всего произошла ошибка авторизации или почтовый сервис отклюнил отправку из-за подозрений в спаме.
-
 ## Туннелирование локального сайта
 
 Для туннелирования используется Expose (https://github.com/beyondcode/expose) и для того чтобы поделиться вашим локальным сайтом выполните команду:
@@ -220,25 +149,6 @@ docky share
 
 Документация expose - https://expose.dev/docs/introduction
 
-## Sphinx (поисковая система)
-
-sphinx (версия 2.2.11) является сервисом в docker-compose.yml (добавляется при установке) и собирается на основе Dockerfile из _docker/sphinx/Dockerfile, где так же лежит и файл конфигурации sphinx.conf.
-
-После запуска контейнеров можно подключаться к sphinx:
-
-```
-sphinx:9306 - протокол MySql
-sphinx:9312 - стандартный протокой
-```
-
-## Создание новых сайтов
-
-0. Выполните команду ```docky down``` или убедитесь что контейнеры остановлены
-1. Для создания сайта выполните команду ``` docky create site ```
-2. Введите доменное имя сайта
-3. Проверьте что все создано (в директории вашего сайта должна была появиться директории с названием введенного вашего доменного имени)
-4. Выполните команду ``` docky build ```
-
 ## Символические ссылки
 
 При запуске контейнера app запускается скрипт - _docker/bin/create_simlink.sh, он создает ссылки внутри контейнера и соответственно ссылки внутри сайта распространяются и на хост и другие контейнеры.
@@ -246,17 +156,18 @@ sphinx:9312 - стандартный протокой
 Ссылки берутся из файла - _docker/app/simlinks. Структура файла должна быть такой:
 
 ```
-/var/www/bitrix /var/www/<domain>/bitrix
-/var/www/local /var/www/<domain>/local
-/var/www/upload /var/www/<domain>/upload
+/var/www/<path> /var/www/<path>
 ```
-
-Соответственно при добавлении сайта автоматически добавляются символические ссылки на каталоги - bitrix, local, upload для введенного домена.
 
 Если же вам нужно дополнительные ссылки добавить, то формируйте все пути относительно структуры контейнера. После этого необходимо выполнить команду:
 
 ```bash
 docky build
+```
+
+Или же создайте volume для сервиса в docker-compose yml
+```
+- ./simlinks:/usr/simlinks
 ```
 
 ## Создание нового домена для основного сайта
@@ -268,7 +179,7 @@ docky build
 
 ## Добавление записей в hosts 
 
-При создании сайта или домена создается файл hosts в директории с docker-compose.yml
+При домена создается файл hosts в директории с docker-compose.yml
 
 В целом вы можете добавлять в него записи вида:
 
@@ -299,7 +210,7 @@ docky init
 - `publish` - Публикация файлов конфигурации в директории с docker-compose.yml, доступен флаг ``` service ``` для публикации отдельного сервиса в docker-compose.yml (node или sphinx)
 ```bash
 docky publish
-docky publish --service node|sphinx
+docky publish --service node|sphinx|redis|memcached
 ```
 - `clean-cache` - очищает кэш директории скрипта, в ней храняться файлы конфигурации, докерфайлы
 ```bash
@@ -309,7 +220,7 @@ docky clean-cache
 ```bash
 docky upgrade
 ```
-- `create site` - Создание нового сайта в директории сайта (./site/new-site.ru)
+- `create site` - Создание нового сайта в директории сайта (./site/new-site.ru) для фреймворка bitrix
 ```bash
 docky create site
 ```
@@ -328,6 +239,10 @@ docky share
 - `php` - Выполнение команды php в контейнере с php
 ```bash
 docky php -v
+```
+- `artisan` - Выполнение команды artisan в контейнере с php для фреймворка laravel
+```bash
+docky artisan migrate
 ```
 - `composer` - Выполнение команды composer в контейнере с php
 ```bash
@@ -358,57 +273,19 @@ docky build
 
 ## Настройка Redis
 
-Для настройки redis выполните следующие шаги:
+Опубликуйте сервис командой
 
-1. Добавьте сервис сервера redis в docker-compose.yml
-```yml
-  redis:
-    image: redis
-    ports:
-      - "6379:6379"
-    command: ["redis-server", "--appendonly", "yes"]
-    volumes:
-      - redis_data:/data
-    container_name: redis
-    networks:
-      - compose
-volumes:
-  ...
-  redis_data:
+```bash
+docky publish --service redis
 ```
-2. В dockerfile вашего app сервиса (_docker/app/php-{PHP_VERSION}/Dockerfile) добавьте установку php модуля redis и igbinary
-```dockerfile
-RUN pecl install igbinary && \
-    pecl install -D 'enable-redis-igbinary="yes"' redis && \
-    docker-php-ext-enable igbinary redis
-```
-3. Выполните build.
 
 ## Настройка memcached
 
-Для настройки memcached выполните следующие шаги:
+Опубликуйте сервис командой
 
-1. Добавьте сервис сервера memcached в docker-compose.yml
-```yml
-  memcached:
-    image: memcached
-    ports:
-      - "11211:11211"
-    container_name: memcached
-    networks:
-      - compose
+```bash
+docky publish --service memcached
 ```
-2. В dockerfile вашего app сервиса (_docker/app/php-{PHP_VERSION}/Dockerfile) добавьте установку php модуля memcached или memcache и нескольких пакетов
-```dockerfile
-# эти пакеты нужны, если вы используете php модуль memcached
-RUN apt-get update && apt-get install -y \
-    libmemcached-dev \
-    zlib1g-dev
-# используйте один из php модулей для работы с сервером memcached
-RUN pecl install memcache && docker-php-ext-enable memcache
-RUN pecl install memcached && docker-php-ext-enable memcached
-```
-3. Выполните build.
 
 ## Переход с первой версии на вторую
 

@@ -3,7 +3,6 @@ package cmd
 import (
 	"docky/config"
 	"docky/utils"
-	myYaml "docky/yaml"
 	"fmt"
 	"os"
 	"regexp"
@@ -192,24 +191,24 @@ func upgrade() error {
 	if err := os.WriteFile(filePath, newYaml, 0644); err != nil {
 		return err
 	}
-
+	yamlConfig := config.GetYamlConfig()
 	if phpVersion != "" && phpVersion != "${"+config.PhpVersionVarName+"}" {
-		myYaml.PhpVersion = phpVersion
+		yamlConfig.PhpVersion = phpVersion
 	}
 	if mysqlVersion != "" && mysqlVersion != "${"+config.MysqlVersionVarName+"}" {
-		myYaml.MysqlVersion = mysqlVersion
+		yamlConfig.MysqlVersion = mysqlVersion
 	}
 	if nodeVersion != "" && nodeVersion != "${"+config.NodeVersionVarName+"}" {
-		myYaml.NodeVersion = nodeVersion
+		yamlConfig.NodeVersion = nodeVersion
 	}
 	if nodePath != "" && nodePath != "${"+config.NodePathVarName+"}" {
-		myYaml.NodePath = nodePath
+		yamlConfig.NodePath = nodePath
 	}
 	if sitePath != "" && sitePath != "${"+config.SitePathVarName+"}" {
-		myYaml.SitePath = sitePath
+		yamlConfig.SitePath = sitePath
 	}
 
-	initEnvFile(true)
+	initEnvFile(yamlConfig, true)
 
 	return nil
 }

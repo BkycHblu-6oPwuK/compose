@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"strconv"
 
 	"github.com/spf13/cobra"
 )
@@ -63,10 +62,9 @@ func execDockerCompose(args []string) error {
 	if err != nil {
 		return err
 	}
-	sitePath := config.GetSiteDirPath()
-	os.Setenv(config.UserGroupVarName, strconv.Itoa(os.Getegid()))
+	os.Setenv(config.UserGroupVarName, config.GetUserGroup())
 	os.Setenv(config.DockerPathVarName, config.GetCurrentDockerFileDirPath())
-	os.Setenv(config.SitePathVarName, sitePath)
+	os.Setenv(config.SitePathVarName, config.GetSiteDirPath())
  	cmd := exec.Command(dockerCmd[0], append(dockerCmd[1:], args...)...)
 	cmd.Dir = config.GetWorkDirPath()
 	cmd.Stdout = os.Stdout
@@ -74,4 +72,8 @@ func execDockerCompose(args []string) error {
 	cmd.Stdin = os.Stdin
 
 	return cmd.Run()
+}
+
+func downContainers() {
+	_ = execDockerCompose([]string{"down"})
 }

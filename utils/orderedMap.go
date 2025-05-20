@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -27,6 +28,14 @@ func (om *OrderedMap[K, V]) Set(key K, value V) {
 func (om *OrderedMap[K, V]) Get(key K) (V, bool) {
 	value, exists := om.values[key]
 	return value, exists
+}
+
+func (om *OrderedMap[K, V]) Values() map[K]V {
+	return om.values
+}
+
+func (om *OrderedMap[K, V]) Keys() []K {
+	return om.keys
 }
 
 func (om *OrderedMap[K, V]) Has(key K) bool {
@@ -79,10 +88,8 @@ func (om *OrderedMap[K, V]) UnmarshalYAML(node *yaml.Node) error {
 		return fmt.Errorf("expected mapping node but got %v", node.Kind)
 	}
 
-	*om = OrderedMap[K, V]{
-		keys:   make([]K, 0, len(node.Content)/2),
-		values: make(map[K]V, len(node.Content)/2),
-	}
+	om.keys = make([]K, 0, len(node.Content)/2)
+	om.values = make(map[K]V, len(node.Content)/2)
 
 	for i := 0; i < len(node.Content); i += 2 {
 		keyNode := node.Content[i]
@@ -109,3 +116,4 @@ func (om *OrderedMap[K, V]) UnmarshalYAML(node *yaml.Node) error {
 
 	return nil
 }
+

@@ -44,7 +44,10 @@ var createDomainModuleCmd = &cobra.Command{
 }
 
 func init() {
-	createCmd.AddCommand(createSiteModuleCmd)
+	switch config.GetCurFramework() {
+	case config.Bitrix:
+		createCmd.AddCommand(createSiteModuleCmd)
+	}
 	createCmd.AddCommand(createDomainModuleCmd)
 	rootCmd.AddCommand(createCmd)
 }

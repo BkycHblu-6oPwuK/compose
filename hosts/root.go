@@ -125,7 +125,6 @@ func detectWindowsHostsPath() (bool, string, string, string, error) {
 }
 
 func addToWindowsHosts(hostFile, hostEntry string) error {
-	fmt.Println(hostEntry)
 	if err := runAsAdminPowerShell(hostFile, hostEntry); err != nil {
 		return err
 	}

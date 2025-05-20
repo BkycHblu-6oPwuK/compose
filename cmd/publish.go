@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"docky/config"
 	"docky/internal"
 	"docky/yaml"
 	"fmt"
@@ -36,19 +37,25 @@ func init() {
 }
 
 func publishService(service string) error {
-	if service == "node" {
+	switch service {
+	case yaml.Node:
 		err := yaml.PublishNodeService()
 		if err != nil {
 			return err
 		}
-		err = initNode()
+		yamlConfig := config.GetYamlConfig()
+		err = initNode(yamlConfig)
 		if err != nil {
 			return err
 		}
-		return initEnvFile(true)
-	} else if service == "sphinx" {
+		return initEnvFile(yamlConfig, true)
+	case yaml.Sphinx:
 		return yaml.PublishSphinxService()
-	} else {
+	case yaml.Redis:
+		return yaml.PublisRedisService()
+	case yaml.Memcached:
+		return yaml.PublishMemcachedService()
+	default:
 		return fmt.Errorf("неизвестный сервис: %s", service)
 	}
 }
