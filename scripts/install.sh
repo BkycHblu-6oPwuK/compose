@@ -13,5 +13,5 @@ curl https://raw.githubusercontent.com/BkycHblu-6oPwuK/compose/main/build/docky 
 }
 
 chmod +x "$INSTALL_DIR/$BINARY_NAME"
-echo "Установка прошла успешно"\n
+echo "Установка прошла успешно"
 echo "Выполните команду $BINARY_NAME clean-cache для очистки кеша"
