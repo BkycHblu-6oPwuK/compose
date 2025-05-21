@@ -18,8 +18,10 @@ var publishCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		validateWorkDir()
 		var err error = nil
+		text := "Файлы опубликованы!"
 		if service != "" {
 			err = publishService(service)
+			text = "Сервис " + service + " опубликован!"
 		} else {
 			err = internal.PublishFiles()
 		}
@@ -27,7 +29,7 @@ var publishCmd = &cobra.Command{
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
 		}
-		fmt.Println("✅ Файлы опубликованы!")
+		fmt.Println("✅ " + text)
 	},
 }
 
@@ -55,6 +57,8 @@ func publishService(service string) error {
 		return yaml.PublisRedisService()
 	case yaml.Memcached:
 		return yaml.PublishMemcachedService()
+	case yaml.Mailhog:
+		return yaml.PublishMailhogService()
 	default:
 		return fmt.Errorf("неизвестный сервис: %s", service)
 	}

@@ -124,11 +124,12 @@ func (c *ComposeFile) addService(name string, service Service) *ComposeFile {
 	c.Services.Set(name, service)
 	return c
 }
-func (c *ComposeFile) addVolume(name string, volume Volume) {
+func (c *ComposeFile) addVolume(name string, volume Volume) *ComposeFile {
 	if c.Volumes == nil {
 		c.Volumes = make(map[string]Volume)
 	}
 	c.Volumes[name] = volume
+	return c
 }
 
 func (c *ComposeFile) addNginxService() *ComposeFile {
@@ -300,34 +301,28 @@ func (c *ComposeFile) Create() error {
 	case config.Laravel:
 		switch c.Config.DbType {
 		case Postgres:
-			c.addPostgresService()
-			c.addVolume(Postgres_data, Volume{})
+			c.addPostgresService().addVolume(Postgres_data, Volume{})
 		case Mysql:
-			c.addMysqlService()
-			c.addVolume(Mysql_data, Volume{})
+			c.addMysqlService().addVolume(Mysql_data, Volume{})
 		}
 
 		switch c.Config.ServerCache {
 		case Memcached:
 			c.addMemcachedService()
 		case Redis:
-			c.addRedisService()
-			c.addVolume(Redis_data, Volume{})
+			c.addRedisService().addVolume(Redis_data, Volume{})
 		}
-		c.addMailHogService()
 	default:
-		c.addMysqlService()
-		c.addVolume(Mysql_data, Volume{})
+		c.addMysqlService().addVolume(Mysql_data, Volume{})
 	}
 
 	if c.Config.CreateNode {
 		c.addNodeService()
 	}
 	if c.Config.CreateSphinx {
-		c.addSphinxService()
-		c.addVolume(Sphinx_data, Volume{})
+		c.addSphinxService().addVolume(Sphinx_data, Volume{})
 	}
-	return c.Save()
+	return c.addMailHogService().Save()
 }
 
 func (c *ComposeFile) Save() error {
@@ -404,6 +399,19 @@ func PublishMemcachedService() error {
 		return nil
 	}
 	compose.addMemcachedService()
+
+	return compose.Save()
+}
+
+func PublishMailhogService() error {
+	compose, err := Load()
+	if err != nil {
+		return err
+	}
+	if compose.Services.Has(Mailhog) {
+		return nil
+	}
+	compose.addMailHogService()
 
 	return compose.Save()
 }
