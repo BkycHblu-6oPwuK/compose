@@ -28,6 +28,7 @@ var publishCmd = &cobra.Command{
 
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
+			os.Exit(1)
 		}
 		fmt.Println("✅ " + text)
 	},
@@ -59,6 +60,8 @@ func publishService(service string) error {
 		return yaml.PublishMemcachedService()
 	case yaml.Mailhog:
 		return yaml.PublishMailhogService()
+	case yaml.PhpMyAdmin:
+		return yaml.PublishPhpMyAdminService()
 	default:
 		return fmt.Errorf("неизвестный сервис: %s", service)
 	}

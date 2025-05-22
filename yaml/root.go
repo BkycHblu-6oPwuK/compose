@@ -3,6 +3,7 @@ package yaml
 import (
 	"docky/config"
 	"docky/utils"
+	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -59,6 +60,7 @@ const (
 	Memcached     string = "memcached"
 	Redis         string = "redis"
 	Mailhog       string = "mailhog"
+	PhpMyAdmin    string = "phpmyadmin"
 	Node          string = "node"
 	Sphinx        string = "sphinx"
 	Bin           string = "bin"
@@ -288,6 +290,28 @@ func (c *ComposeFile) addMailHogService() *ComposeFile {
 	return c.addService(Mailhog, service)
 }
 
+func (c *ComposeFile) addPhpMyAdminService() *ComposeFile {
+	service := Service{
+		Image: "phpmyadmin/phpmyadmin",
+		Restart: "always",
+		Ports: []string{
+			"8080:80",
+		},
+		Environment: map[string]string{
+			"PMA_HOST":     Mysql,
+			"PMA_PORT":     "3306",
+			"PMA_USER":     "root",
+			"PMA_PASSWORD": "root",
+		},
+		Dependencies: []string{
+			Mysql,
+		},
+		Networks:      []string{Compose},
+		ContainerName: PhpMyAdmin,
+	}
+	return c.addService(PhpMyAdmin, service)
+}
+
 func getBaseArgsBuild() map[string]string {
 	return map[string]string{
 		config.UserGroupVarName: "${" + config.UserGroupVarName + "}",
@@ -412,6 +436,22 @@ func PublishMailhogService() error {
 		return nil
 	}
 	compose.addMailHogService()
+
+	return compose.Save()
+}
+
+func PublishPhpMyAdminService() error {
+	compose, err := Load()
+	if err != nil {
+		return err
+	}
+	if !compose.Services.Has(Mysql) {
+		return fmt.Errorf("phpmyadmin работает только с mysql. В docker-compose не найден сервис %s", Mysql);
+	}
+	if compose.Services.Has(PhpMyAdmin) {
+		return nil
+	}
+	compose.addPhpMyAdminService()
 
 	return compose.Save()
 }

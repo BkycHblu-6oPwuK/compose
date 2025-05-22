@@ -172,6 +172,7 @@ func initDockerComposeFile() error {
 		yamlConfig.CreateNode = true
 
 	default:
+		yamlConfig.DbType = yaml.Mysql
 		yamlConfig.MysqlVersion = getOrChoose("Выберите версию mysql: ", yamlConfig.MysqlVersion, yamlFile.GetAvailableVersions(yaml.Mysql), &isRecreate)
 
 		if utils.AskYesNo("Добавлять node js?") {

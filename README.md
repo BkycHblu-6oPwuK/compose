@@ -207,10 +207,10 @@ docky hosts push
 ```bash
 docky init
 ```
-- `publish` - Публикация файлов конфигурации в директории с docker-compose.yml, доступен флаг ``` service ``` для публикации отдельного сервиса в docker-compose.yml (node или sphinx)
+- `publish` - Публикация файлов конфигурации в директории с docker-compose.yml, доступен флаг ``` service ``` для публикации отдельного сервиса в docker-compose.yml
 ```bash
 docky publish
-docky publish --service node|sphinx|redis|memcached|mailhog
+docky publish --service node|sphinx|redis|memcached|mailhog|phpmyadmin
 ```
 - `clean-cache` - очищает кэш директории скрипта, в ней храняться файлы конфигурации, докерфайлы
 ```bash
