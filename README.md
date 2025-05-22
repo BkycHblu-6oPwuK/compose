@@ -12,7 +12,7 @@
 Для установки можно запустить установочный скрипт с правами суперпользователя:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/BkycHblu-6oPwuK/compose/main/scripts/install.sh | sudo sh
+curl -sSL https://raw.githubusercontent.com/BkycHblu-6oPwuK/compose/main/app/scripts/install.sh | sudo sh
 ```
 Либо же можете вручую скачать бинарник (находится в build/docky) и поместить его в ```/usr/local/bin``` и не забудьте дать ему необходимые права (команда ```chmod +x```)
 

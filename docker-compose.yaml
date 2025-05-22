@@ -1,0 +1,11 @@
+services:
+  goapp:
+    build: .
+    volumes:
+      - ./app:/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: "tail -f /dev/null"
+    working_dir: /app
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    container_name: goapp
