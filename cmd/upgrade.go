@@ -208,7 +208,7 @@ func upgrade() error {
 		yamlConfig.SitePath = sitePath
 	}
 
-	initEnvFile(yamlConfig, true)
+	initEnvFile(yamlConfig)
 
 	return nil
 }

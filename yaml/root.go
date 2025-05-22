@@ -5,6 +5,7 @@ import (
 	"docky/utils"
 	"fmt"
 	"os"
+	"sync"
 
 	"gopkg.in/yaml.v3"
 )
@@ -85,6 +86,9 @@ var (
 		Memcached,
 		Redis,
 	}
+	once        sync.Once
+	currentYaml *ComposeFile
+	loadErr     error
 )
 
 func NewYamlFile(cfg *config.YamlConfig) *ComposeFile {
@@ -100,15 +104,15 @@ func NewYamlFile(cfg *config.YamlConfig) *ComposeFile {
 	}
 }
 
-func (c *ComposeFile) GetAvailableVersions(service string) []string {
+func GetAvailableVersions(service string, yamlConfig *config.YamlConfig) []string {
 	switch service {
 	case App:
-		if c.Config.FrameworkName == config.Laravel {
+		if yamlConfig.FrameworkName == config.Laravel {
 			return []string{"8.2", "8.3", "8.4"}
 		}
 		return []string{"7.4", "8.2", "8.3", "8.4"}
 	case Mysql:
-		if c.Config.FrameworkName == config.Laravel {
+		if yamlConfig.FrameworkName == config.Laravel {
 			return []string{"8.0", "latest"}
 		}
 		return []string{"5.7", "8.0", "latest"}
@@ -292,7 +296,7 @@ func (c *ComposeFile) addMailHogService() *ComposeFile {
 
 func (c *ComposeFile) addPhpMyAdminService() *ComposeFile {
 	service := Service{
-		Image: "phpmyadmin/phpmyadmin",
+		Image:   "phpmyadmin/phpmyadmin",
 		Restart: "always",
 		Ports: []string{
 			"8080:80",
@@ -358,100 +362,155 @@ func (c *ComposeFile) Save() error {
 }
 
 func Load() (*ComposeFile, error) {
-	data, err := os.ReadFile(config.GetDockerComposeFilePath())
-	if err != nil {
-		return nil, err
-	}
+	once.Do(func() {
+		data, err := os.ReadFile(config.GetDockerComposeFilePath())
+		if err != nil {
+			loadErr = fmt.Errorf("ошибка чтения файла: %w", err)
+			return
+		}
 
-	compose := &ComposeFile{
-		Services: utils.NewOrderedMap[string, Service](),
-		Volumes:  make(map[string]Volume),
-		Networks: make(map[string]Network),
-		Config:   nil,
-	}
-	err = yaml.Unmarshal(data, compose)
-	if err != nil {
-		return nil, err
-	}
+		compose := &ComposeFile{
+			Services: utils.NewOrderedMap[string, Service](),
+			Volumes:  make(map[string]Volume),
+			Networks: make(map[string]Network),
+			Config:   nil,
+		}
+		err = yaml.Unmarshal(data, compose)
+		if err != nil {
+			loadErr = fmt.Errorf("ошибка парсинга yaml: %w", err)
+			return
+		}
 
-	return compose, nil
+		currentYaml = compose
+	})
+
+	return currentYaml, loadErr
+}
+
+func SetCurrentYaml(c *ComposeFile) {
+	currentYaml = c
+}
+
+func GetCurrentDbType() (string, error) {
+	compose, err := Load()
+	if err != nil {
+		return "", err
+	}
+	switch true {
+	case compose.Services.Has(Mysql):
+		return Mysql, nil
+	case compose.Services.Has(Postgres):
+		return Postgres, nil
+	default:
+		return Sqlite, nil
+	}
+}
+
+func GetCurrentServerCache() (string, error) {
+	compose, err := Load()
+	if err != nil {
+		return "", err
+	}
+	switch true {
+	case compose.Services.Has(Redis):
+		return Redis, nil
+	case compose.Services.Has(Memcached):
+		return Memcached, nil
+	default:
+		return "", nil
+	}
+}
+
+func publish(f func(c *ComposeFile) error) error {
+	compose, err := Load()
+	if err != nil {
+		return err
+	}
+	if err := f(compose); err != nil {
+		return err
+	}
+	return compose.Save()
+}
+
+func PublishMysqlService() error {
+	return publish(func(c *ComposeFile) error {
+		if !c.Services.Has(Mysql) {
+			c.addMysqlService().addVolume(Mysql_data, Volume{})
+		}
+		if(c.Services.Has(Postgres)){
+			c.Services.Delete(Postgres)
+			delete(c.Volumes, Postgres_data)
+		}
+		return nil
+	})
+}
+
+func PublishPostgresService() error {
+	return publish(func(c *ComposeFile) error {
+		if !c.Services.Has(Postgres) {
+			c.addPostgresService().addVolume(Postgres_data, Volume{})
+		}
+		if(c.Services.Has(Mysql)){
+			c.Services.Delete(Mysql)
+			delete(c.Volumes, Mysql_data)
+		}
+		return nil
+	})
 }
 
 func PublishNodeService() error {
-	compose, err := Load()
-	if err != nil {
-		return err
-	}
-	if compose.Services.Has(Node) {
+	return publish(func(c *ComposeFile) error {
+		if !c.Services.Has(Node) {
+			c.addNodeService()
+		}
 		return nil
-	}
-	compose.addNodeService()
-
-	return compose.Save()
+	})
 }
 
 func PublishSphinxService() error {
-	compose, err := Load()
-	if err != nil {
-		return err
-	}
-	if compose.Services.Has(Sphinx) {
+	return publish(func(c *ComposeFile) error {
+		if !c.Services.Has(Sphinx) {
+			c.addSphinxService().addVolume(Sphinx_data, Volume{})
+		}
 		return nil
-	}
-	compose.addSphinxService().addVolume(Sphinx_data, Volume{})
-	return compose.Save()
+	})
 }
 
-func PublisRedisService() error {
-	compose, err := Load()
-	if err != nil {
-		return err
-	}
-	if compose.Services.Has(Redis) {
+func PublishRedisService() error {
+	return publish(func(c *ComposeFile) error {
+		if !c.Services.Has(Redis) {
+			c.addRedisService().addVolume(Redis_data, Volume{})
+		}
 		return nil
-	}
-	compose.addRedisService().addVolume(Redis_data, Volume{})
-	return compose.Save()
+	})
 }
 
 func PublishMemcachedService() error {
-	compose, err := Load()
-	if err != nil {
-		return err
-	}
-	if compose.Services.Has(Memcached) {
+	return publish(func(c *ComposeFile) error {
+		if !c.Services.Has(Memcached) {
+			c.addMemcachedService()
+		}
 		return nil
-	}
-	compose.addMemcachedService()
-
-	return compose.Save()
+	})
 }
 
 func PublishMailhogService() error {
-	compose, err := Load()
-	if err != nil {
-		return err
-	}
-	if compose.Services.Has(Mailhog) {
+	return publish(func(c *ComposeFile) error {
+		if !c.Services.Has(Mailhog) {
+			c.addMailHogService()
+		}
 		return nil
-	}
-	compose.addMailHogService()
-
-	return compose.Save()
+	})
 }
 
 func PublishPhpMyAdminService() error {
-	compose, err := Load()
-	if err != nil {
-		return err
-	}
-	if !compose.Services.Has(Mysql) {
-		return fmt.Errorf("phpmyadmin работает только с mysql. В docker-compose не найден сервис %s", Mysql);
-	}
-	if compose.Services.Has(PhpMyAdmin) {
+	return publish(func(c *ComposeFile) error {
+		if !c.Services.Has(Mysql) {
+			return fmt.Errorf("phpmyadmin работает только с mysql. В docker-compose не найден сервис %s", Mysql)
+		}
+		if !c.Services.Has(PhpMyAdmin) {
+			c.addPhpMyAdminService()
+		}
 		return nil
-	}
-	compose.addPhpMyAdminService()
-
-	return compose.Save()
+	})
 }

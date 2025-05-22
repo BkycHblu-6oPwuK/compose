@@ -66,23 +66,21 @@ func initNodeDir(yamlConfig *config.YamlConfig) error {
 }
 
 func initNode(yamlConfig *config.YamlConfig) error {
-	if yamlConfig.NodePath == "" {
-		switch yamlConfig.FrameworkName {
-		case config.Bitrix:
+	switch yamlConfig.FrameworkName {
+	case config.Bitrix:
+		if yamlConfig.NodePath == "" {
 			yamlConfig.NodePath = utils.ReadPath("Введите путь до директории с package.json относительно директории сайта. Например (local/js/vite или пустая строка): ")
 		}
+		yamlConfig.NodePath = strings.TrimPrefix(yamlConfig.NodePath, config.SitePathInContainer)
+		return initNodeDir(yamlConfig)
+	case config.Laravel:
+		yamlConfig.NodePath = config.SitePathInContainer
 	}
-	yamlConfig.NodePath = strings.TrimPrefix(yamlConfig.NodePath, config.SitePathInContainer)
-	return initNodeDir(yamlConfig)
+	return nil
 }
 
-func initEnvFile(yamlConfig *config.YamlConfig, recreate bool) error {
-	envFileName := config.GetEnvFilePath()
-	if !recreate && utils.FileIsExists(envFileName) {
-		return nil
-	}
-
-	outFile, err := os.Create(envFileName)
+func initEnvFile(yamlConfig *config.YamlConfig) error {
+	outFile, err := os.Create(config.GetEnvFilePath())
 	if err != nil {
 		return err
 	}
@@ -91,7 +89,7 @@ func initEnvFile(yamlConfig *config.YamlConfig, recreate bool) error {
 	if !strings.HasPrefix(yamlConfig.NodePath, config.SitePathInContainer) {
 		yamlConfig.NodePath = filepath.Join(config.SitePathInContainer, yamlConfig.NodePath)
 	}
-
+	
 	data := []string{
 		config.DockyFrameworkVarName + "=" + yamlConfig.FrameworkName,
 		config.PhpVersionVarName + "=" + yamlConfig.PhpVersion,
@@ -120,10 +118,9 @@ func initEnvFile(yamlConfig *config.YamlConfig, recreate bool) error {
 	return nil
 }
 
-func getOrChoose(prompt, value string, options []string, isRecreate *bool) string {
+func getOrChoose(prompt, value string, options []string) string {
 	if value == "" {
 		_, value = utils.ChooseFromList(prompt, options)
-		*isRecreate = true
 	}
 	return value
 }
@@ -139,15 +136,11 @@ func initDockerComposeFile() error {
 		}
 	}
 
-	var isRecreate bool
 	yamlConfig := config.GetYamlConfig()
-	if yamlConfig.FrameworkName == "" {
-		_, yamlConfig.FrameworkName = utils.ChooseFromList("Ваш фреймворк: ", yaml.AvailableFramework[:])
-		isRecreate = true
-	}
 	yamlFile := yaml.NewYamlFile(yamlConfig)
 
-	yamlConfig.PhpVersion = getOrChoose("Выберите версию php: ", yamlConfig.PhpVersion, yamlFile.GetAvailableVersions(yaml.App), &isRecreate)
+	yamlConfig.FrameworkName = getOrChoose("Ваш фреймворк: ", yamlConfig.FrameworkName, yaml.AvailableFramework[:])
+	yamlConfig.PhpVersion = getOrChoose("Выберите версию php: ", "", yaml.GetAvailableVersions(yaml.App, yamlFile.Config))
 
 	switch yamlConfig.FrameworkName {
 	case config.Laravel:
@@ -155,36 +148,37 @@ func initDockerComposeFile() error {
 		if err != nil {
 			return err
 		}
-		_, yamlConfig.DbType = utils.ChooseFromList("Выберите базу данных: ", yaml.AvailableDb[:])
+
+		yamlConfig.DbType = getOrChoose("Выберите базу данных: ", "", yaml.AvailableDb[:])
 
 		switch yamlConfig.DbType {
 		case yaml.Mysql:
-			yamlConfig.MysqlVersion = getOrChoose("Выберите версию mysql: ", yamlConfig.MysqlVersion, yamlFile.GetAvailableVersions(yaml.Mysql), &isRecreate)
+			yamlConfig.MysqlVersion = getOrChoose("Выберите версию mysql: ", yamlConfig.MysqlVersion, yaml.GetAvailableVersions(yaml.Mysql, yamlFile.Config))
 		case yaml.Postgres:
-			yamlConfig.PostgresVersion = getOrChoose("Выберите версию postgres: ", yamlConfig.PostgresVersion, yamlFile.GetAvailableVersions(yaml.Postgres), &isRecreate)
+			yamlConfig.PostgresVersion = getOrChoose("Выберите версию postgres: ", yamlConfig.PostgresVersion, yaml.GetAvailableVersions(yaml.Postgres, yamlFile.Config))
 		}
 
-		_, serverCache := utils.ChooseFromList("Выберите сервер кеширования: ", append(yaml.AvailableServerCache[:], "Пропуск"))
+		serverCache := getOrChoose("Выберите сервер кеширования: ", "", append(yaml.AvailableServerCache[:], "Пропуск"))
 		if serverCache != "Пропуск" {
 			yamlConfig.ServerCache = serverCache
 		}
 
 		yamlConfig.CreateNode = true
-
+		initNode(yamlConfig)
 	default:
 		yamlConfig.DbType = yaml.Mysql
-		yamlConfig.MysqlVersion = getOrChoose("Выберите версию mysql: ", yamlConfig.MysqlVersion, yamlFile.GetAvailableVersions(yaml.Mysql), &isRecreate)
+		if yamlConfig.MysqlVersion == "" {
+			yamlConfig.MysqlVersion = getOrChoose("Выберите версию mysql: ", yamlConfig.MysqlVersion, yaml.GetAvailableVersions(yaml.Mysql, yamlFile.Config))
+		}
 
 		if utils.AskYesNo("Добавлять node js?") {
 			yamlConfig.CreateNode = true
-			isRecreate = true
 			initNode(yamlConfig)
 		}
 
 		yamlConfig.CreateSphinx = utils.AskYesNo("Добавлять sphinx?")
 	}
-
-	if err := initEnvFile(yamlConfig, isRecreate); err != nil {
+	if err := initEnvFile(yamlConfig); err != nil {
 		return err
 	}
 

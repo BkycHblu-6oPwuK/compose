@@ -55,7 +55,7 @@ func ChooseFromList(prompt string, options []string) (int, string) {
 			fmt.Printf("  %d) %s\n", i+1, opt)
 		}
 
-		fmt.Print("Введите номер: ")
+		fmt.Print(prompt)
 		input, _ := reader.ReadString('\n')
 		input = strings.TrimSpace(input)
 

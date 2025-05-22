@@ -51,11 +51,31 @@ func publishService(service string) error {
 		if err != nil {
 			return err
 		}
-		return initEnvFile(yamlConfig, true)
+		return initEnvFile(yamlConfig)
+	case yaml.Mysql:
+		err := yaml.PublishMysqlService()
+		if err != nil {
+			return err
+		}
+		yamlConfig := config.GetYamlConfig()
+		if yamlConfig.MysqlVersion == "" {
+			yamlConfig.MysqlVersion = getOrChoose("Выберите версию mysql: ", yamlConfig.MysqlVersion, yaml.GetAvailableVersions(yaml.Mysql, yamlConfig))
+		}
+		return initEnvFile(yamlConfig)
+	case yaml.Postgres:
+		err := yaml.PublishPostgresService()
+		if err != nil {
+			return err
+		}
+		yamlConfig := config.GetYamlConfig()
+		if yamlConfig.PostgresVersion == "" {
+			yamlConfig.PostgresVersion = getOrChoose("Выберите версию postgres: ", yamlConfig.PostgresVersion, yaml.GetAvailableVersions(yaml.Postgres, yamlConfig))
+		}
+		return initEnvFile(yamlConfig)
 	case yaml.Sphinx:
 		return yaml.PublishSphinxService()
 	case yaml.Redis:
-		return yaml.PublisRedisService()
+		return yaml.PublishRedisService()
 	case yaml.Memcached:
 		return yaml.PublishMemcachedService()
 	case yaml.Mailhog:

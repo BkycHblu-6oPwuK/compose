@@ -17,7 +17,7 @@ type YamlConfig struct {
 	CreateNode      bool
 	CreateSphinx    bool
 	ServerCache     string // memcached, redis
-	UserGroup       string // memcached, redis
+	UserGroup       string
 }
 
 var (
