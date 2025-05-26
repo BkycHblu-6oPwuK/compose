@@ -57,11 +57,19 @@ func isDockerComposeAvailable() ([]string, error) {
 	return nil, errors.New("docker compose не установлен или не запущен")
 }
 
+func validateUserGroup() {
+	group := config.GetUserGroup()
+	if group == "" || group == "0" {
+		config.GetYamlConfig().UserGroup = "1000"
+	}
+}
+
 func execDockerCompose(args []string) error {
 	dockerCmd, err := isDockerComposeAvailable()
 	if err != nil {
 		return err
 	}
+	validateUserGroup()
 	os.Setenv(config.UserGroupVarName, config.GetUserGroup())
 	os.Setenv(config.DockerPathVarName, config.GetCurrentDockerFileDirPath())
 	os.Setenv(config.SitePathVarName, config.GetSiteDirPath())

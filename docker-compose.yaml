@@ -1,11 +1,14 @@
 services:
   goapp:
-    build: .
+    build: 
+      context: .
+      args:
+        - USERGROUP=1000
     volumes:
-      - ./app:/app
+      - ./app:/home/appuser/app
       - /var/run/docker.sock:/var/run/docker.sock
     command: "tail -f /dev/null"
-    working_dir: /app
+    working_dir: /home/appuser/app
     environment:
       - DOCKER_HOST=unix:///var/run/docker.sock
     container_name: goapp
