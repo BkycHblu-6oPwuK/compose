@@ -9,7 +9,7 @@ import (
 	"text/template"
 
 	"docky/config"
-	"docky/yaml"
+	"docky/yaml/helper"
 )
 
 var (
@@ -17,9 +17,9 @@ var (
 	dockerPath      = config.GetDockerFilesDirPath()
 	partialsPath    = filepath.Join(config.GetScriptCacheDir(), "partials")
 
-	nginxCachePath      = filepath.Join(dockerCachePath, yaml.Nginx)
+	nginxCachePath      = filepath.Join(dockerCachePath, helper.Nginx)
 	nginxCacheCertsPath = filepath.Join(nginxCachePath, "certs")
-	nginxPath           = filepath.Join(dockerPath, yaml.Nginx)
+	nginxPath           = filepath.Join(dockerPath, helper.Nginx)
 	nginxCertsPath      = filepath.Join(nginxPath, "certs")
 
 	rootCrt = filepath.Join(nginxCacheCertsPath, "rootCA.crt")
@@ -59,7 +59,7 @@ func Create(domainName, rootPath string) error {
 		"nginxCrt":     filepath.Join(nginxCertsDomainPath, "nginx.crt"),
 		"nginxConf":    filepath.Join(nginxPath, "conf.d", domainName+".conf"),
 		"nginxPart":    filepath.Join(nginxPath, "conf.d", "snippets", domainName+".conf"),
-		"nginxAppConf": filepath.Join(dockerPath, yaml.App, yaml.Nginx, domainName+".conf"),
+		"nginxAppConf": filepath.Join(dockerPath, helper.App, helper.Nginx, domainName+".conf"),
 	}
 
 	if err := renderStub(stubDomainCertsFile, paths["domainExt"], ctx); err != nil {

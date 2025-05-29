@@ -37,7 +37,7 @@ func init() {
 }
 
 func validateWorkDir() {
-	if !utils.FileIsExists(config.GetDockerComposeFilePath()) {
+	if fileExists, _ := utils.FileIsExists(config.GetDockerComposeFilePath()); !fileExists {
 		fmt.Fprintf(os.Stderr, "❌ Ошибка: не инициализирован docker-compose.yml\n")
 		os.Exit(1)
 	}

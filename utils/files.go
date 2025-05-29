@@ -7,15 +7,16 @@ import (
 	"path/filepath"
 )
 
-func fileIsExists(path string) bool {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return false
+func fileIsExists(path string) (fileExists bool, isDir bool) {
+	info, err := os.Stat(path)
+	if err != nil {
+		return false, false
 	}
-	return true
+	return true, info.IsDir()
 }
 
 // Проверяет существует ли файл по указанному пути или директория
-func FileIsExists(path string) bool {
+func FileIsExists(path string) (fileExists bool, isDir bool) {
 	return fileIsExists(path)
 }
 

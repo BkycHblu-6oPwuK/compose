@@ -18,7 +18,7 @@ func PushToLocalHosts(domain string) error {
 	var err error
 	filePath := config.GetLocalHostsFilePath()
 
-	if !utils.FileIsExists(filePath) {
+	if fileExists, _ := utils.FileIsExists(filePath); !fileExists {
 		file, err = os.Create(filePath)
 	} else {
 		file, err = os.OpenFile(filePath, os.O_WRONLY|os.O_APPEND, 0644)
@@ -34,7 +34,7 @@ func PushToLocalHosts(domain string) error {
 
 func PushToHosts() error {
 	hostsFile := config.GetLocalHostsFilePath()
-	if !utils.FileIsExists(hostsFile) {
+	if fileExists, _ := utils.FileIsExists(hostsFile); !fileExists {
 		return fmt.Errorf("файл %s не найден", hostsFile)
 	}
 

@@ -3,7 +3,7 @@ package cmd
 import (
 	"docky/config"
 	"docky/utils"
-	"docky/yaml"
+	"docky/yaml/helper"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -42,7 +42,7 @@ func init() {
 
 func initSiteDir() error {
 	siteDirPath := config.GetSiteDirPath()
-	if utils.FileIsExists(siteDirPath) {
+	if fileExists, _ := utils.FileIsExists(siteDirPath); fileExists {
 		return nil
 	}
 
@@ -55,7 +55,7 @@ func initSiteDir() error {
 
 func initNodeDir(yamlConfig *config.YamlConfig) error {
 	path := filepath.Join(config.GetSiteDirPath(), yamlConfig.NodePath)
-	if utils.FileIsExists(path) {
+	if fileExists, _ := utils.FileIsExists(path); fileExists {
 		return nil
 	}
 	err := os.MkdirAll(path, 0755)
@@ -99,10 +99,6 @@ func initEnvFile(yamlConfig *config.YamlConfig) error {
 		config.NodePathVarName + "=" + yamlConfig.NodePath,
 	}
 
-	if yamlConfig.SitePath != "" {
-		data = append(data, config.SitePathVarName+"="+yamlConfig.SitePath)
-	}
-
 	for _, line := range data {
 		if _, err := outFile.WriteString(line + "\n"); err != nil {
 			return err
@@ -127,7 +123,7 @@ func getOrChoose(prompt, value string, options []string) string {
 
 func initDockerComposeFile() error {
 	composeFilePath := config.GetDockerComposeFilePath()
-	if utils.FileIsExists(composeFilePath) {
+	if fileExists, _ := utils.FileIsExists(composeFilePath); fileExists {
 		if !utils.AskYesNo("Файл docker-compose.yml уже существует, создать новый?") {
 			return nil
 		}
@@ -137,10 +133,9 @@ func initDockerComposeFile() error {
 	}
 
 	yamlConfig := config.GetYamlConfig()
-	yamlFile := yaml.NewYamlFile(yamlConfig)
 
-	yamlConfig.FrameworkName = getOrChoose("Ваш фреймворк: ", yamlConfig.FrameworkName, yaml.AvailableFramework[:])
-	yamlConfig.PhpVersion = getOrChoose("Выберите версию php: ", "", yaml.GetAvailableVersions(yaml.App, yamlFile.Config))
+	yamlConfig.FrameworkName = getOrChoose("Ваш фреймворк: ", yamlConfig.FrameworkName, helper.AvailableFramework[:])
+	yamlConfig.PhpVersion = getOrChoose("Выберите версию php: ", "", helper.GetAvailableVersions(helper.App, yamlConfig))
 
 	switch yamlConfig.FrameworkName {
 	case config.Laravel:
@@ -149,16 +144,16 @@ func initDockerComposeFile() error {
 			return err
 		}
 
-		yamlConfig.DbType = getOrChoose("Выберите базу данных: ", "", yaml.AvailableDb[:])
+		yamlConfig.DbType = getOrChoose("Выберите базу данных: ", "", helper.AvailableDb[:])
 
 		switch yamlConfig.DbType {
-		case yaml.Mysql:
-			yamlConfig.MysqlVersion = getOrChoose("Выберите версию mysql: ", yamlConfig.MysqlVersion, yaml.GetAvailableVersions(yaml.Mysql, yamlFile.Config))
-		case yaml.Postgres:
-			yamlConfig.PostgresVersion = getOrChoose("Выберите версию postgres: ", yamlConfig.PostgresVersion, yaml.GetAvailableVersions(yaml.Postgres, yamlFile.Config))
+		case helper.Mysql:
+			yamlConfig.MysqlVersion = getOrChoose("Выберите версию mysql: ", yamlConfig.MysqlVersion, helper.GetAvailableVersions(helper.Mysql, yamlConfig))
+		case helper.Postgres:
+			yamlConfig.PostgresVersion = getOrChoose("Выберите версию postgres: ", yamlConfig.PostgresVersion, helper.GetAvailableVersions(helper.Postgres, yamlConfig))
 		}
 
-		serverCache := getOrChoose("Выберите сервер кеширования: ", "", append(yaml.AvailableServerCache[:], "Пропуск"))
+		serverCache := getOrChoose("Выберите сервер кеширования: ", "", append(helper.AvailableServerCache[:], "Пропуск"))
 		if serverCache != "Пропуск" {
 			yamlConfig.ServerCache = serverCache
 		}
@@ -166,9 +161,9 @@ func initDockerComposeFile() error {
 		yamlConfig.CreateNode = true
 		initNode(yamlConfig)
 	default:
-		yamlConfig.DbType = yaml.Mysql
+		yamlConfig.DbType = helper.Mysql
 		if yamlConfig.MysqlVersion == "" {
-			yamlConfig.MysqlVersion = getOrChoose("Выберите версию mysql: ", yamlConfig.MysqlVersion, yaml.GetAvailableVersions(yaml.Mysql, yamlFile.Config))
+			yamlConfig.MysqlVersion = getOrChoose("Выберите версию mysql: ", yamlConfig.MysqlVersion, helper.GetAvailableVersions(helper.Mysql, yamlConfig))
 		}
 
 		if utils.AskYesNo("Добавлять node js?") {
@@ -182,7 +177,7 @@ func initDockerComposeFile() error {
 		return err
 	}
 
-	return yamlFile.Create()
+	return helper.BuildYaml(yamlConfig).Save()
 }
 
 func initLaravel() error {
@@ -202,7 +197,7 @@ func initLaravel() error {
 		}
 	}
 
-	if err := execDockerCompose([]string{"build", yaml.App}); err != nil {
+	if err := execDockerCompose([]string{"build", helper.App}); err != nil {
 		return err
 	}
 
@@ -210,27 +205,27 @@ func initLaravel() error {
 	execArgs := []string{
 		"run", "--rm",
 		"--user", "docky", "--entrypoint", "php",
-		yaml.App, "/home/docky/.config/composer/vendor/bin/laravel", "new", dir,
+		helper.App, "/home/docky/.config/composer/vendor/bin/laravel", "new", dir,
 	}
 	if err := execDockerCompose(execArgs); err != nil {
 		return err
 	}
 
 	path := filepath.Join(siteDir, dir)
-	if utils.FileIsExists(path) {
+	if fileExists, _ := utils.FileIsExists(path); fileExists {
 		if err := utils.MoveDirContents(path, siteDir); err != nil {
 			return err
 		}
 	}
 
-	if utils.FileIsExists(filepath.Join(siteDir, "package.json")) {
-		if err := execDockerCompose([]string{"build", yaml.Node}); err != nil {
+	if fileExists, _ := utils.FileIsExists(filepath.Join(siteDir, "package.json")); fileExists {
+		if err := execDockerCompose([]string{"build", helper.Node}); err != nil {
 			return err
 		}
 		execArgs := []string{
 			"run", "--rm",
 			"--user", "docky", "--entrypoint", "npm",
-			yaml.Node, "install",
+			helper.Node, "install",
 		}
 		if err := execDockerCompose(execArgs); err != nil {
 			return err

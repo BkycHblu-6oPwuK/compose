@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"docky/yaml"
+	"docky/yaml/helper"
 	"fmt"
 	"os"
 
@@ -10,7 +10,7 @@ import (
 
 var composerCmd = &cobra.Command{
 	Use:                "composer",
-	Short:              "Запускает composer команду в контейнере " + yaml.App,
+	Short:              "Запускает composer команду в контейнере " + helper.App,
 	DisableFlagParsing: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		validateWorkDir()
@@ -29,7 +29,7 @@ func execComposerInContainer(args []string) error {
 	execArgs := append([]string{
 		"exec", "-it",
 		"--user", "docky",
-		yaml.App, "composer",
+		helper.App, "composer",
 	}, args...)
 
 	return execDockerCompose(execArgs)

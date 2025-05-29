@@ -14,11 +14,11 @@ import (
 
 const (
 	ScriptName             string = "docky"
-	SiteDirName            string = "site" // директория с проектом
+	SiteDirName            string = "site"
 	DockerFilesDirName     string = "_docker"
 	Bitrix                 string = "bitrix"
 	Laravel                string = "laravel"
-	LocalHostsFileName     string = "hosts"
+	LocalHostsFileName     string = "hosts.txt"
 	DockerComposeFileName  string = "docker-compose.yml"
 	UserGroupVarName       string = "USERGROUP"
 	DockyFrameworkVarName  string = "DOCKY_FRAMEWORK"
@@ -86,17 +86,9 @@ func GetWorkDirPath() string {
 }
 
 func GetSiteDirPath() string {
-	sitePath := GetYamlConfig().SitePath
-	if sitePath == "" {
-		return filepath.Join(GetWorkDirPath(), SiteDirName)
-	}
-
-	if filepath.IsAbs(sitePath) {
-		return sitePath
-	}
-
-	return filepath.Join(GetWorkDirPath(), sitePath)
+	return filepath.Join(GetWorkDirPath(), SiteDirName)
 }
+
 func GetUserGroup() string {
 	userGroup := GetYamlConfig().UserGroup
 	if userGroup == "" {
@@ -120,7 +112,7 @@ func GetDockerFilesDirPathInCache() string {
 }
 func GetCurrentDockerFileDirPath() string {
 	path := GetDockerFilesDirPath()
-	if utils.FileIsExists(path) {
+	if fileExists, _ := utils.FileIsExists(path); fileExists {
 		return path
 	}
 	path = GetDockerFilesDirPathInCache()
@@ -137,7 +129,7 @@ func GetEnvFilePath() string {
 }
 func loadEnvFile() error {
 	envPath := GetEnvFilePath()
-	if utils.FileIsExists(envPath) {
+	if fileExists, _ := utils.FileIsExists(envPath); fileExists {
 		return godotenv.Load(envPath)
 	}
 	return nil

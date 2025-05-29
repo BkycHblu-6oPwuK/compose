@@ -73,7 +73,7 @@ func ExtractFilesInCache() error {
 	if err != nil {
 		return err
 	}
-	if utils.FileIsExists(targetDir) {
+	if fileExists, _ := utils.FileIsExists(targetDir); fileExists{
 		return nil
 	}
 
@@ -87,7 +87,7 @@ func ExtractFilesInCache() error {
 func PublishFiles() error {
 	targetDir := config.GetDockerFilesDirPath()
 	var err error = nil
-	if utils.FileIsExists(targetDir) {
+	if fileExists, _ := utils.FileIsExists(targetDir); fileExists {
 		err = os.Rename(targetDir, targetDir+config.Timestamp)
 		if err != nil {
 			return err

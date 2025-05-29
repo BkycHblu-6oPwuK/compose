@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"docky/yaml"
+	"docky/yaml/helper"
 	"fmt"
 	"os"
 
@@ -10,7 +10,7 @@ import (
 
 var phpCmd = &cobra.Command{
 	Use:                "php",
-	Short:              "Запускает php команду в контейнере " + yaml.App,
+	Short:              "Запускает php команду в контейнере " + helper.App,
 	DisableFlagParsing: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		validateWorkDir()
@@ -29,7 +29,7 @@ func execPhpInContainer(args []string) error {
 	execArgs := append([]string{
 		"exec", "-it",
 		"--user", "docky",
-		yaml.App, "php",
+		helper.App, "php",
 	}, args...)
 
 	return execDockerCompose(execArgs)

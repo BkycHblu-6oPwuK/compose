@@ -13,7 +13,6 @@ type YamlConfig struct {
 	PostgresVersion string
 	NodeVersion     string
 	NodePath        string
-	SitePath        string
 	CreateNode      bool
 	CreateSphinx    bool
 	ServerCache     string // memcached, redis
@@ -38,7 +37,6 @@ func GetYamlConfig() *YamlConfig {
 			PostgresVersion: os.Getenv(PostgresVersionVarName),
 			NodeVersion:     nodeVersion,
 			NodePath:        os.Getenv(NodePathVarName),
-			SitePath:        os.Getenv(SitePathVarName),
 			UserGroup:       os.Getenv(UserGroupVarName),
 		}
 	})

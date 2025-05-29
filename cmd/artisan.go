@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"docky/config"
-	"docky/yaml"
+	"docky/yaml/helper"
 	"fmt"
 	"os"
 
@@ -11,7 +11,7 @@ import (
 
 var artisanCmd = &cobra.Command{
 	Use:                "artisan",
-	Short:              "Запускает artisan команду в контейнере " + yaml.App,
+	Short:              "Запускает artisan команду в контейнере " + helper.App,
 	DisableFlagParsing: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		validateWorkDir()

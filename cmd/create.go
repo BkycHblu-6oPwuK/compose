@@ -1,5 +1,5 @@
 package cmd
-
+// @todo убрать публикацию и создавать сертификаты в отдельной директории
 import (
 	"docky/certs"
 	"docky/config"
@@ -56,7 +56,7 @@ func createSite() error {
 	var err error = nil
 	domain := readDomain()
 	dirPath := filepath.Join(config.GetSiteDirPath(), domain)
-	if !utils.FileIsExists(dirPath) {
+	if fileExists, _ := utils.FileIsExists(dirPath); !fileExists {
 		err = os.Mkdir(dirPath, 0755)
 		if err != nil {
 			return fmt.Errorf("ошибка создания директории сайта: %v", err)
@@ -83,7 +83,7 @@ func pushToSimlinks(domain string) error {
 	var err error
 	filePath := filepath.Join(config.GetDockerFilesDirPath(), "app", "simlinks")
 
-	if !utils.FileIsExists(filePath) {
+	if fileExists, _ := utils.FileIsExists(filePath); !fileExists {
 		file, err = os.Create(filePath)
 	} else {
 		file, err = os.OpenFile(filePath, os.O_WRONLY|os.O_APPEND, 0644)
@@ -131,7 +131,7 @@ func readDomain() string {
 
 func createCerts(domain string, rootPath string) error {
 	var err error = nil
-	if !utils.FileIsExists(config.GetDockerFilesDirPath()) {
+	if fileExists, _ := utils.FileIsExists(config.GetDockerFilesDirPath()); !fileExists {
 		err = internal.PublishFiles()
 		if err != nil {
 			return err

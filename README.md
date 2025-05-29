@@ -43,7 +43,6 @@ MYSQL_VERSION={любая версия доступная на docker hub}
 POSTGRES_VERSION={любая версия доступная на docker hub}
 NODE_VERSION={любая версия доступная по ссылке - https://deb.nodesource.com/setup_${NODE_VERSION}.x}
 NODE_PATH=/var/www/local/js/vite # здесь путь до package json в контейнере, поэтому указывайте вместе абсолютный путь. /var/www - это DOCUMENT_ROOT сайта в контейнере
-SITE_PATH={абсолютный или относительный путь к директории сайта} # указывайте если не хотите размещать сайт в директории site по умолчанию
 USERGROUP={id группы пользователя (обычно 1000), по умолчанию скрипт автоматически прокидывает, но если вы запустите скрипт из под root то будет ошибка. Тогда используйте эту переменную, либо поменяйте пользователя в консоли}
 ```
 
@@ -216,9 +215,9 @@ docky publish --service node|mysql|postgres|sphinx|redis|memcached|mailhog|phpmy
 ```bash
 docky clean-cache
 ```
-- `upgrade` - изменяет docker-compose.yml под вторую версия скрипта, при этом старый файл будет переименован и вы всегда можете откатить изменение
+- `reset` - сбрасывает docker-compose.yml под актуальную версию скрипта, при этом старый файл будет переименован и вы всегда можете откатить изменение
 ```bash
-docky upgrade
+docky reset
 ```
 - `create site` - Создание нового сайта в директории сайта (./site/new-site.ru) для фреймворка bitrix
 ```bash
@@ -286,15 +285,3 @@ docky publish --service redis
 ```bash
 docky publish --service memcached
 ```
-
-## Переход с первой версии на вторую
-
-Для перехода выполните команду:
-
-```bash
-docky upgrade
-```
-
-Скрипт попытается поменять docker-compose.yml под вторую версию и создаст файл .env.
-
-После выполнения рекомендуется проверить корректность изменения (файл docker-compose.yml, файл .env)

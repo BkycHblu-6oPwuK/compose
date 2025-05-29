@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"docky/yaml"
+	"docky/yaml/helper"
 	"fmt"
 	"os"
 
@@ -10,7 +10,7 @@ import (
 
 var npxCmd = &cobra.Command{
 	Use:                "npx",
-	Short:              "Запускает npx команду в контейнере " + yaml.Node,
+	Short:              "Запускает npx команду в контейнере " + helper.Node,
 	DisableFlagParsing: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		validateWorkDir()
@@ -29,7 +29,7 @@ func execNpxInContainer(args []string) error {
 	execArgs := append([]string{
 		"exec", "-it",
 		"--user", "docky",
-		yaml.Node, "npx",
+		helper.Node, "npx",
 	}, args...)
 
 	return execDockerCompose(execArgs)
