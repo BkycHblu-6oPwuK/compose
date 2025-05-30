@@ -133,6 +133,8 @@ func resetServices(services *utils.OrderedMap[string, myService.Service]) error 
 					continue
 				case "${DOCKER_PATH}/nginx/conf.d:/etc/nginx/conf.d":
 					continue
+				case "${DOCKER_PATH}/app/nginx/:/etc/nginx/conf.d":
+					continue
 				default:
 					filtered = append(filtered, service.Volumes[i])
 				}
