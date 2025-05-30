@@ -16,6 +16,7 @@ const (
 	ScriptName             string = "docky"
 	SiteDirName            string = "site"
 	DockerFilesDirName     string = "_docker"
+	ConfFilesDirName       string = "_conf"
 	Bitrix                 string = "bitrix"
 	Laravel                string = "laravel"
 	LocalHostsFileName     string = "hosts.txt"
@@ -23,6 +24,7 @@ const (
 	UserGroupVarName       string = "USERGROUP"
 	DockyFrameworkVarName  string = "DOCKY_FRAMEWORK"
 	DockerPathVarName      string = "DOCKER_PATH"
+	ConfPathVarName        string = "CONF_PATH"
 	PhpVersionVarName      string = "PHP_VERSION"
 	MysqlVersionVarName    string = "MYSQL_VERSION"
 	PostgresVersionVarName string = "POSTGRES_VERSION"
@@ -118,8 +120,11 @@ func GetCurrentDockerFileDirPath() string {
 	path = GetDockerFilesDirPathInCache()
 	return path
 }
+func GetConfFilesDirPath() string {
+	return filepath.Join(GetWorkDirPath(), ConfFilesDirName)
+}
 func GetLocalHostsFilePath() string {
-	return filepath.Join(GetWorkDirPath(), LocalHostsFileName)
+	return filepath.Join(GetConfFilesDirPath(), LocalHostsFileName)
 }
 func GetDockerComposeFilePath() string {
 	return filepath.Join(GetWorkDirPath(), DockerComposeFileName)

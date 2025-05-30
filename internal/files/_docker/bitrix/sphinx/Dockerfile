@@ -17,6 +17,8 @@ RUN mkdir -p /var/run/sphinx && \
     rm -rf /sphinx-2.2.11-release* && \
     mkdir -p /var/lib/sphinx/data
 
+COPY sphinx/sphinx.conf /usr/local/etc/sphinx.conf
+
 WORKDIR /var/lib/sphinx/data
 
 CMD ["searchd", "--nodetach"]

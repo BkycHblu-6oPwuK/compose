@@ -3,6 +3,7 @@ package service
 import (
 	"docky/yaml/build"
 	"docky/yaml/network"
+	"sync"
 )
 
 type Service struct {
@@ -21,7 +22,9 @@ type Service struct {
 }
 
 type ServiceBuilder struct {
-	service Service
+	service   Service
+	volumeSet map[string]struct{}
+	once      sync.Once
 }
 
 func NewServiceBuilder() *ServiceBuilder {
@@ -69,6 +72,25 @@ func (b *ServiceBuilder) AddVolume(volume string) *ServiceBuilder {
 	return b
 }
 
+func (b *ServiceBuilder) SetVolume(volume string) *ServiceBuilder {
+	b.once.Do(func() {
+		b.volumeSet = make(map[string]struct{})
+		for _, vol := range b.service.Volumes {
+			b.volumeSet[vol] = struct{}{}
+		}
+	})
+
+	if _, exists := b.volumeSet[volume]; exists {
+		return b
+	}
+
+	b.volumeSet[volume] = struct{}{}
+	b.service.Volumes = append(b.service.Volumes, volume)
+
+	return b
+}
+
+
 func (b *ServiceBuilder) AddPort(port string) *ServiceBuilder {
 	b.service.Ports = append(b.service.Ports, port)
 	return b
@@ -90,10 +112,6 @@ func (b *ServiceBuilder) SetDependency(key int, value string) *ServiceBuilder {
 }
 
 func (b *ServiceBuilder) RewriteServiceDependency(search, newValue string) *ServiceBuilder {
-	len := len(b.service.Dependencies)
-	if len == 0 {
-		return b.AddDependency(newValue)
-	}
 	for i, dep := range b.service.Dependencies {
 		if dep == search {
 			return b.SetDependency(i, newValue)

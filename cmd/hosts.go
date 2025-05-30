@@ -1,7 +1,8 @@
 package cmd
 
 import (
-	"docky/hosts"
+	"docky/cmd/hosts"
+	"docky/utils/globalHelper"
 	"fmt"
 	"os"
 
@@ -16,10 +17,11 @@ var pushHostsModuleCmd = &cobra.Command{
 	Use:   "push",
 	Short: "Переносит записи в hosts из локального hosts в директории проекта",
 	Run: func(cmd *cobra.Command, args []string) {
-		validateWorkDir()
+		globalHelper.ValidateWorkDir()
 		err := hosts.PushToHosts()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
+			return
 		}
 		fmt.Println("✅ Записи в hosts перенесены!")
 	},

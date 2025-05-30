@@ -3,7 +3,6 @@ package cmd
 import (
 	"docky/config"
 	"docky/internal"
-	"docky/utils"
 	"errors"
 	"fmt"
 	"os"
@@ -24,7 +23,7 @@ var rootCmd = &cobra.Command{
 		}
 		if err := execDockerCompose(args); err != nil {
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
-			os.Exit(1)
+			return
 		}
 	},
 }
@@ -33,13 +32,6 @@ func init() {
 	err := internal.ExtractFilesInCache()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
-	}
-}
-
-func validateWorkDir() {
-	if fileExists, _ := utils.FileIsExists(config.GetDockerComposeFilePath()); !fileExists {
-		fmt.Fprintf(os.Stderr, "❌ Ошибка: не инициализирован docker-compose.yml\n")
-		os.Exit(1)
 	}
 }
 
@@ -64,6 +56,7 @@ func execDockerCompose(args []string) error {
 	}
 	os.Setenv(config.UserGroupVarName, config.GetUserGroup())
 	os.Setenv(config.DockerPathVarName, config.GetCurrentDockerFileDirPath())
+	os.Setenv(config.ConfPathVarName, config.GetConfFilesDirPath())
 	os.Setenv(config.SitePathVarName, config.GetSiteDirPath())
  	cmd := exec.Command(dockerCmd[0], append(dockerCmd[1:], args...)...)
 	cmd.Dir = config.GetWorkDirPath()

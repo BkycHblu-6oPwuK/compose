@@ -6,7 +6,9 @@ package cmd
 
 import (
 	"docky/config"
+	"docky/internal"
 	"docky/utils"
+	"docky/utils/globalHelper"
 	myYaml "docky/yaml"
 	"docky/yaml/helper"
 	myService "docky/yaml/service"
@@ -23,10 +25,11 @@ var upgradeCmd = &cobra.Command{
 	Use:   "reset",
 	Short: "Сбрасывает docker-compose.yml под актуальный формат",
 	Run: func(cmd *cobra.Command, args []string) {
-		validateWorkDir()
+		globalHelper.ValidateWorkDir()
 		err := reset()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
+			return
 		}
 		fmt.Println("✅ docker-compose.yml обновлён, проверьте его на наличие ошибок. Проверьте файл .env на наличие новых переменных окружения. Старый файл docker-compose.yml переименован.")
 	},
@@ -37,6 +40,12 @@ func init() {
 }
 
 func reset() error {
+	if err := internal.CleanCacheDir(); err != nil {
+		return err
+	}
+	if err := internal.ExtractFilesInCache(); err != nil {
+		return err
+	}
 	dockerComposeFilePath := config.GetDockerComposeFilePath()
 	if fileExists, _ := utils.FileIsExists(dockerComposeFilePath); !fileExists {
 		return fmt.Errorf("файл %s не найден", dockerComposeFilePath)
@@ -54,7 +63,10 @@ func reset() error {
 		return err
 	}
 	hostsRename()
-	return composeFile.Save()
+	if err := composeFile.Save(); err != nil {
+		return err
+	}
+	return execDockerCompose([]string{"build"})
 }
 
 func resetServices(services *utils.OrderedMap[string, myService.Service]) error {
@@ -91,6 +103,7 @@ func resetServices(services *utils.OrderedMap[string, myService.Service]) error 
 			service.Image = "mysql:${" + config.MysqlVersionVarName + "}"
 		}
 		if service.Volumes != nil {
+			filtered := service.Volumes[:0]
 			for i, volume := range service.Volumes {
 				if strings.HasPrefix(volume, "./_docker") || strings.HasPrefix(volume, "./vendor/beeralex/compose/src/_docker") {
 					service.Volumes[i] = replaceDockerPath(volume, &phpVersion)
@@ -103,7 +116,22 @@ func resetServices(services *utils.OrderedMap[string, myService.Service]) error 
 						service.Volumes[i] = "${SITE_PATH}:" + parts[1]
 					}
 				}
+				switch service.Volumes[i] {
+				case "${DOCKER_PATH}/app/php-${PHP_VERSION}/php.ini:/usr/local/etc/php/conf.d/php.ini":
+					continue
+				case "${DOCKER_PATH}/app/php-fpm.conf:/usr/local/etc/php-fpm.d/zzzzwww.conf":
+					continue
+				case "${DOCKER_PATH}/app/nginx.conf:/etc/nginx/conf.d/nginx.conf":
+					continue
+				case "${DOCKER_PATH}/sphinx/sphinx.conf:/usr/local/etc/sphinx.conf":
+					continue
+				case "${DOCKER_PATH}/nginx/conf.d/:/etc/nginx/conf.d":
+					continue
+				default:
+					filtered = append(filtered, service.Volumes[i])
+				}
 			}
+			service.Volumes = filtered
 		}
 		if name == helper.App {
 			if service.Environment == nil {
@@ -154,7 +182,7 @@ func resetServices(services *utils.OrderedMap[string, myService.Service]) error 
 		}
 	}
 
-	return initEnvFile(yamlConfig)
+	return globalHelper.InitEnvFile(yamlConfig)
 }
 
 func replaceDockerPath(value string, phpVersion *string) string {
@@ -169,11 +197,16 @@ func replaceDockerPath(value string, phpVersion *string) string {
 }
 
 func hostsRename() {
-	hostsPath := filepath.Join(config.GetWorkDirPath(), "hostss")
+	hostsPath := filepath.Join(config.GetWorkDirPath(), "hosts")
+	targetPath := config.GetLocalHostsFilePath()
 	if fileExists, isDir := utils.FileIsExists(hostsPath); fileExists && !isDir {
-		err := os.Rename(hostsPath, config.GetLocalHostsFilePath())
+		if err := os.MkdirAll(filepath.Dir(targetPath), 0755); err != nil {
+			fmt.Printf("ошибка при создании директории: %v\n", err)
+			return
+		}
+		err := os.Rename(hostsPath, targetPath)
 		if err != nil {
-			fmt.Printf("ошибка при переименовывании файла hosts: %v", err)
+			fmt.Printf("ошибка при переименовывании файла hosts: %v\n", err)
 		}
 	}
 }

@@ -68,3 +68,10 @@ func ChooseFromList(prompt string, options []string) (int, string) {
 		return num - 1, options[num-1]
 	}
 }
+
+func GetOrChoose(prompt, value string, options []string) string {
+	if value == "" {
+		_, value = ChooseFromList(prompt, options)
+	}
+	return value
+}

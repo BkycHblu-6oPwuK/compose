@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"docky/config"
+	"docky/utils/globalHelper"
 	"fmt"
 	"os"
 	"os/exec"
@@ -15,7 +16,7 @@ var shareCmd = &cobra.Command{
 	Short:              "Туннелирование локального сайта",
 	DisableFlagParsing: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		validateWorkDir()
+		globalHelper.ValidateWorkDir()
 		if err := share(args); err != nil {
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
 			os.Exit(1)

@@ -15,6 +15,7 @@ var cleanCacheCmd = &cobra.Command{
 		err := internal.CleanCacheDir()
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
+			return
 		}
 		fmt.Println("✅ Кэш очищен!")
 	},

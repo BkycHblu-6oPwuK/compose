@@ -100,3 +100,22 @@ func PublishFiles() error {
 	}
 	return err
 }
+
+func PublishFile(filePath, targetPath string) error {
+	data, err := files.ReadFile(filepath.Join(rootDir, filePath))
+	if err != nil {
+		return err
+	}
+
+	err = os.MkdirAll(filepath.Dir(targetPath), 0755)
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(targetPath, data, 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

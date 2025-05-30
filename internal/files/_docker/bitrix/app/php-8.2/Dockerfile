@@ -7,7 +7,6 @@ RUN groupadd --force -g $USERGROUP docky
 RUN useradd -ms /bin/bash --no-user-group -g $USERGROUP -u $USERGROUP docky
 
 COPY nginx/certs/ /usr/local/share/ca-certificates/
-COPY nginx/certs/ /etc/nginx/certs
 
 RUN apt-get update && apt-get install -y \
     apt-utils \
@@ -73,6 +72,11 @@ COPY app/simlinks /usr/simlinks
 COPY bin/create_simlink.sh /usr/local/bin/create_simlink.sh
 RUN sed -i 's/\r$//' /usr/local/bin/create_simlink.sh && \
     chmod +x /usr/local/bin/create_simlink.sh
+
+COPY app/php-8.2/php.ini /usr/local/etc/php/conf.d/php.ini
+COPY app/php-8.2/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
+COPY app/php-fpm.conf /usr/local/etc/php-fpm.d/zzzzwww.conf
+COPY app/nginx /etc/nginx/conf.d
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"docky/config"
+	"docky/utils/globalHelper"
 	"docky/yaml/helper"
 	"fmt"
 	"os"
@@ -14,10 +15,10 @@ var artisanCmd = &cobra.Command{
 	Short:              "Запускает artisan команду в контейнере " + helper.App,
 	DisableFlagParsing: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		validateWorkDir()
+		globalHelper.ValidateWorkDir()
 		if err := execArtisanInContainer(args); err != nil {
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
-			os.Exit(1)
+			return
 		}
 	},
 }

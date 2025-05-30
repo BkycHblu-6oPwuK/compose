@@ -119,3 +119,20 @@ func PublishPhpMyAdminService() error {
 		return nil
 	})
 }
+
+func PublishVolumes(serviceNames []string, volumes map[string][]string) error {
+	return publishWithBuilder(func(b *yaml.ComposeFileBuilder) error {
+		for _, serviceName := range serviceNames {
+			if curService, exists := b.GetService(serviceName); exists {
+				serviceBuilder := service.NewServiceBuilderFrom(curService)
+				if vols, ok := volumes[serviceName]; ok {
+					for _, vol := range vols {
+						serviceBuilder.SetVolume(vol)
+					}
+				}
+				b.AddService(serviceName, serviceBuilder.Build())
+			}
+		}
+		return nil
+	})
+}

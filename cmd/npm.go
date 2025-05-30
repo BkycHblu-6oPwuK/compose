@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"docky/utils/globalHelper"
 	"docky/yaml/helper"
 	"fmt"
 	"os"
@@ -13,10 +14,10 @@ var npmCmd = &cobra.Command{
 	Short:              "Запускает npm команду в контейнере " + helper.Node,
 	DisableFlagParsing: true,
 	Run: func(cmd *cobra.Command, args []string) {
-		validateWorkDir()
+		globalHelper.ValidateWorkDir()
 		if err := execNpmInContainer(args); err != nil {
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
-			os.Exit(1)
+			return
 		}
 	},
 }

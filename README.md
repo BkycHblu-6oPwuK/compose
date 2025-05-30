@@ -43,7 +43,16 @@ MYSQL_VERSION={любая версия доступная на docker hub}
 POSTGRES_VERSION={любая версия доступная на docker hub}
 NODE_VERSION={любая версия доступная по ссылке - https://deb.nodesource.com/setup_${NODE_VERSION}.x}
 NODE_PATH=/var/www/local/js/vite # здесь путь до package json в контейнере, поэтому указывайте вместе абсолютный путь. /var/www - это DOCUMENT_ROOT сайта в контейнере
-USERGROUP={id группы пользователя (обычно 1000), по умолчанию скрипт автоматически прокидывает, но если вы запустите скрипт из под root то будет ошибка. Тогда используйте эту переменную, либо поменяйте пользователя в консоли}
+USERGROUP={id группы пользователя (обычно 1000), по умолчанию скрипт автоматически прокидывает id группы текущего пользователя консоли, но если вы запустите скрипт из под root то автоматически пробросит 1000. Используйте эту переменную если нужно изменить группу пользователя в контейнерах app,nginx,node}
+```
+
+Переменные окружения прокидываемые скриптом:
+
+```
+SITE_PATH - путь к директории site в директории с docker-compose.yml
+DOCKER_PATH - путь к директории _docker в ~.cache/docky/_docker, либо _docker, если такая существует, в одной директории с docker-compose.yml
+CONF_PATH - путь к директории _conf в одной директории с docker-compose.yml
+USERGROUP - id группы текущего пользователя консоли
 ```
 
 ## Публикация докерфайлов и файлов конфигурации
@@ -56,11 +65,30 @@ docky publish
 
 При этом если директория ./_docker уже существует, то она будет переименована.
 
+Можно опубликовать отдельные файлы командой:
+
+```bash
+docky publish --file php.ini|xdebug.ini
+```
+
+Публикация происходит в директорию ```_conf```
+
+опубликовать отдельный сервис в docker-compose.yaml:
+
+```bash
+docky publish --service node|mysql|postgres|sphinx|redis|memcached|mailhog|phpmyadmin
+```
+
 ## SSL сертификаты для nginx
 
 Сертификаты и ключи копируются в контейнер из /_docker/nginx/certs/ и запись о них уже добавлена в nginx.conf.
 
-Свои сертификаты вы так же можете помещать в /_docker/nginx/certs/ и после этого делать build.
+Размещайте свои сертификаты в _conf/nginx/certs/ и добавляйте каждый сертификат через volume в docker-compose.yml
+
+```
+- ${CONF_PATH}/nginx/certs/site:/usr/local/share/ca-certificates/site
+- ${CONF_PATH}/nginx/certs/cert.crt:/usr/local/share/ca-certificates/cert.crt
+```
 
 Сейчас там используются временные самописные сертификаты которые будут действительны до ~2051 года.
 
@@ -68,25 +96,47 @@ docky publish
 
 Более подробно - [certificates.md](certificates.md)
 
+Выполните шаги из пункта "Импорт в windows" чтобы не было ошибок в браузере
+
+Так же вы можете добавлять файлы конфигурации для nginx через volume в docker-compose.yml
+
+```
+- ${CONF_PATH}/nginx/site.conf:/etc/nginx/conf.d/site.conf
+```
+
 ## php
 
-Конфигурации для каждых из версий находятся по пути - ``` ./_docker/app/php-{PHP_VERSION}/ ```.
+Конфигурации для каждых из версий находятся по пути - ``` ${DOCKER_PATH}/app/php-{PHP_VERSION}/ ```.
 
 Для изменения версии - измените ее в файле .env, переменая ```PHP_VERSION```
+
+свои конфигурации можно размещать в - ``` ${CONF_PATH}/app/php-{PHP_VERSION}/ ```.
+
+php.ini публикуется командой:
+
+```bash
+docky publish --file php.ini
+```
+
+файл будет помещен в - ``` ${CONF_PATH}/app/php-{PHP_VERSION}/php.ini ```
 
 ## Xdebug
 
 По умолчанию установлен.
 
-публикуйте файлы конфигурации и настраивайте ```_docker/app/php-${PHP_VERSION}/xdebug.ini``` по своему усмотрению
+xdebug.ini публикуется командой:
 
-Либо же измените volume на свой xdebug.ini
+```bash
+docky publish --file xdebug.ini
+```
+
+файл будет помещен в - ``` ${CONF_PATH}/app/php-{PHP_VERSION}/xdebug.ini ```
 
 ## Nginx в php контейнере
 
 Для работы с сокетами в php кентейнер был установлен nginx который проксирует запросы на контейнер nginx.
 
-nginx.conf для контейнера php лежит в _docker/app/nginx.conf
+nginx.conf для контейнера php лежит в ${DOCKER_PATH}/app/nginx.conf
 
 ## Mysql
 
@@ -94,7 +144,7 @@ nginx.conf для контейнера php лежит в _docker/app/nginx.conf
 
 По умолчанию база данных храниться в томе (volumes) mysql_data, если хотите хранить базу локально в директории, то замените mysql_data на вашу директорию, например - ./tmp/db
 
-Так же в сервис прокидывается файл конфигурации my.cnf, он располагается в ./_docker/mysql/my.cnf - туда вы можете вносить свои правки.
+Так же в сервис прокидывается файл конфигурации my.cnf, он располагается в ${DOCKER_PATH}/mysql/my.cnf - туда вы можете вносить свои правки.
 
 ## Node и npm, npx
 
@@ -152,7 +202,7 @@ docky share
 
 При запуске контейнера app запускается скрипт - _docker/bin/create_simlink.sh, он создает ссылки внутри контейнера и соответственно ссылки внутри сайта распространяются и на хост и другие контейнеры.
 
-Ссылки берутся из файла - _docker/app/simlinks. Структура файла должна быть такой:
+Ссылки берутся из файла - ${DOCKER_PATH}/app/simlinks. Структура файла должна быть такой:
 
 ```
 /var/www/<path> /var/www/<path>
@@ -164,9 +214,10 @@ docky share
 docky build
 ```
 
-Или же создайте volume для сервиса в docker-compose yml
+Свой файл с сиволическими ссылками вы можете создать в _conf/simlinks и добавить volume в service app docker-compose.yml
+
 ```
-- ./simlinks:/usr/simlinks
+- ${CONF_PATH}/simlinks:/usr/simlinks_extra
 ```
 
 ## Создание нового домена для основного сайта
@@ -178,7 +229,7 @@ docky build
 
 ## Добавление записей в hosts 
 
-При домена создается файл hosts в директории с docker-compose.yml
+При домена создается файл hosts.txt в ``` ${CONF_PATH/hosts.txt} ```
 
 В целом вы можете добавлять в него записи вида:
 
@@ -210,6 +261,7 @@ docky init
 ```bash
 docky publish
 docky publish --service node|mysql|postgres|sphinx|redis|memcached|mailhog|phpmyadmin
+docky publish --file php.ini|xdebug.ini
 ```
 - `clean-cache` - очищает кэш директории скрипта, в ней храняться файлы конфигурации, докерфайлы
 ```bash

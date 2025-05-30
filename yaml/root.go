@@ -86,7 +86,7 @@ func (b *ComposeFileBuilder) HasService(name string) bool {
 	return b.file.Services.Has(name)
 }
 
-func (b *ComposeFileBuilder) GetService(name string) (service.Service, bool) {
+func (b *ComposeFileBuilder) GetService(name string) (service service.Service, exists bool) {
 	return b.file.Services.Get(name)
 }
 
