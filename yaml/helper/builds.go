@@ -90,7 +90,6 @@ func buildNodeService() service.Service {
 	nodeService := service.NewServiceBuilder().
 		SetBuild(buildBaseBuild("${"+config.DockerPathVarName+"}/"+Node+"/"+Dockerfile, map[string]string{
 			"NODE_VERSION": "${" + config.NodeVersionVarName + "}",
-			"NODE_PATH":    "${" + config.NodePathVarName + "}",
 		})).
 		AddPort("5173:5173").
 		AddPort("5174:5174").
@@ -98,6 +97,7 @@ func buildNodeService() service.Service {
 		AddDependency(App).
 		AddDefaultNetwork().
 		SetCommandTailNull().
+		SetWorkingDir("${" + config.NodePathVarName + "}").
 		SetContainerName(Node).
 		Build()
 	return nodeService

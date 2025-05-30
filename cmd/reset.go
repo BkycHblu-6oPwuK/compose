@@ -87,12 +87,11 @@ func resetServices(services *utils.OrderedMap[string, myService.Service]) error 
 				nodeVersion = service.Build.Args["NODE_VERSION"]
 				service.Build.Args["NODE_VERSION"] = "${" + config.NodeVersionVarName + "}"
 			}
-			if service.Build.Args["NODE_PATH"] != "" {
-				nodePath = service.Build.Args["NODE_PATH"]
-				service.Build.Args["NODE_PATH"] = "${" + config.NodePathVarName + "}"
-			}
 			if service.Build.Args["DOCKER_PATH"] != "" {
 				delete(service.Build.Args, "DOCKER_PATH")
+			}
+			if service.Build.Args["NODE_PATH"] != "" {
+				delete(service.Build.Args, "NODE_PATH")
 			}
 		}
 		if service.Image != "" && strings.HasPrefix(service.Image, "mysql:") {
@@ -149,6 +148,9 @@ func resetServices(services *utils.OrderedMap[string, myService.Service]) error 
 		} else if name == helper.Node {
 			if service.Command == nil {
 				service.Command = "tail -f /dev/null"
+			}
+			if service.WorkingDir == "" {
+				service.WorkingDir = "${" + config.NodePathVarName + "}"
 			}
 		}
 		if service.Environment != nil {

@@ -18,6 +18,7 @@ type Service struct {
 	Command       interface{}       `yaml:"command,omitempty"`
 	ExtraHosts    []string          `yaml:"extra_hosts,omitempty"`
 	Secrets       []string          `yaml:"secrets,omitempty"`
+	WorkingDir    string            `yaml:"working_dir,omitempty"`
 	ContainerName string            `yaml:"container_name,omitempty"`
 }
 
@@ -90,7 +91,6 @@ func (b *ServiceBuilder) SetVolume(volume string) *ServiceBuilder {
 	return b
 }
 
-
 func (b *ServiceBuilder) AddPort(port string) *ServiceBuilder {
 	b.service.Ports = append(b.service.Ports, port)
 	return b
@@ -151,6 +151,11 @@ func (b *ServiceBuilder) AddSecret(secret string) *ServiceBuilder {
 
 func (b *ServiceBuilder) SetContainerName(name string) *ServiceBuilder {
 	b.service.ContainerName = name
+	return b
+}
+
+func (b *ServiceBuilder) SetWorkingDir(value string) *ServiceBuilder {
+	b.service.WorkingDir = value
 	return b
 }
 

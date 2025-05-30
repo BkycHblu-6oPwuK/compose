@@ -1,10 +1,17 @@
-FROM ubuntu:22.04
+FROM debian:12-slim
 
-RUN apt-get update && apt-get install -y \
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    libmysqlclient-dev \
+    default-libmysqlclient-dev \
     libexpat1-dev \
-    wget
+    wget \
+    ca-certificates \
+    gnupg \
+    apt-utils \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
 RUN wget http://sphinxsearch.com/files/sphinx-2.2.11-release.tar.gz && \
     tar xzf sphinx-2.2.11-release.tar.gz && \
