@@ -3,10 +3,9 @@ package cmd
 import (
 	"docky/config"
 	"docky/internal"
-	"errors"
+	"docky/utils/globalHelper"
 	"fmt"
 	"os"
-	"os/exec"
 
 	"github.com/spf13/cobra"
 )
@@ -21,7 +20,7 @@ var rootCmd = &cobra.Command{
 			_ = cmd.Help()
 			return
 		}
-		if err := execDockerCompose(args); err != nil {
+		if err := globalHelper.ExecDockerCompose(args); err != nil {
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
 			return
 		}
@@ -37,36 +36,4 @@ func init() {
 
 func Execute() error {
 	return rootCmd.Execute()
-}
-
-func isDockerComposeAvailable() ([]string, error) {
-	if err := exec.Command("docker", "compose", "version").Run(); err == nil {
-		return []string{"docker", "compose"}, nil
-	}
-	if err := exec.Command("docker-compose", "version").Run(); err == nil {
-		return []string{"docker-compose"}, nil
-	}
-	return nil, errors.New("docker compose не установлен или не запущен")
-}
-
-func execDockerCompose(args []string) error {
-	dockerCmd, err := isDockerComposeAvailable()
-	if err != nil {
-		return err
-	}
-	os.Setenv(config.UserGroupVarName, config.GetUserGroup())
-	os.Setenv(config.DockerPathVarName, config.GetCurrentDockerFileDirPath())
-	os.Setenv(config.ConfPathVarName, config.GetConfFilesDirPath())
-	os.Setenv(config.SitePathVarName, config.GetSiteDirPath())
- 	cmd := exec.Command(dockerCmd[0], append(dockerCmd[1:], args...)...)
-	cmd.Dir = config.GetWorkDirPath()
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
-
-	return cmd.Run()
-}
-
-func downContainers() {
-	_ = execDockerCompose([]string{"down"})
 }

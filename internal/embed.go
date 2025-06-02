@@ -73,7 +73,7 @@ func ExtractFilesInCache() error {
 	if err != nil {
 		return err
 	}
-	if fileExists, _ := utils.FileIsExists(targetDir); fileExists{
+	if fileExists, _ := utils.FileIsExists(targetDir); fileExists {
 		return nil
 	}
 
@@ -101,20 +101,27 @@ func PublishFiles() error {
 	return err
 }
 
-func PublishFile(filePath, targetPath string) error {
-	data, err := files.ReadFile(filepath.Join(rootDir, filePath))
-	if err != nil {
-		return err
-	}
+func PublishFile(filePath, targetPath string, isDir bool) error {
+	if !isDir {
+		data, err := files.ReadFile(filepath.Join(rootDir, filePath))
+		if err != nil {
+			return err
+		}
 
-	err = os.MkdirAll(filepath.Dir(targetPath), 0755)
-	if err != nil {
-		return err
-	}
+		err = os.MkdirAll(filepath.Dir(targetPath), 0755)
+		if err != nil {
+			return err
+		}
 
-	err = os.WriteFile(targetPath, data, 0644)
-	if err != nil {
-		return err
+		err = os.WriteFile(targetPath, data, 0644)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := extractAllFiles(targetPath, filepath.Join(rootDir, filePath))
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

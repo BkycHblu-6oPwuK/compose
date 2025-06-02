@@ -33,5 +33,5 @@ func execNpxInContainer(args []string) error {
 		helper.Node, "npx",
 	}, args...)
 
-	return execDockerCompose(execArgs)
+	return globalHelper.ExecDockerCompose(execArgs)
 }

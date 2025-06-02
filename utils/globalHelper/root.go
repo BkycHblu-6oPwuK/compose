@@ -3,8 +3,10 @@ package globalHelper
 import (
 	"docky/config"
 	"docky/utils"
+	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -56,7 +58,7 @@ func InitNodeDir(yamlConfig *config.YamlConfig) error {
 
 func InitNode(yamlConfig *config.YamlConfig) error {
 	switch yamlConfig.FrameworkName {
-	case config.Bitrix:
+	case config.Bitrix, config.Symfony, config.Vanilla:
 		if yamlConfig.NodePath == "" {
 			yamlConfig.NodePath = utils.ReadPath("Введите путь до директории с package.json относительно директории сайта. Например (local/js/vite или пустая строка): ")
 		}
@@ -101,4 +103,36 @@ func InitEnvFile(yamlConfig *config.YamlConfig) error {
 	}
 
 	return nil
+}
+
+func IsDockerComposeAvailable() ([]string, error) {
+	if err := exec.Command("docker", "compose", "version").Run(); err == nil {
+		return []string{"docker", "compose"}, nil
+	}
+	if err := exec.Command("docker-compose", "version").Run(); err == nil {
+		return []string{"docker-compose"}, nil
+	}
+	return nil, errors.New("docker compose не установлен или не запущен")
+}
+
+func ExecDockerCompose(args []string) error {
+	dockerCmd, err := IsDockerComposeAvailable()
+	if err != nil {
+		return err
+	}
+	os.Setenv(config.UserGroupVarName, config.GetUserGroup())
+	os.Setenv(config.DockerPathVarName, config.GetCurrentDockerFileDirPath())
+	os.Setenv(config.ConfPathVarName, config.GetConfFilesDirPath())
+	os.Setenv(config.SitePathVarName, config.GetSiteDirPath())
+ 	cmd := exec.Command(dockerCmd[0], append(dockerCmd[1:], args...)...)
+	cmd.Dir = config.GetWorkDirPath()
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+
+	return cmd.Run()
+}
+
+func DownContainers() {
+	_ = ExecDockerCompose([]string{"down"})
 }

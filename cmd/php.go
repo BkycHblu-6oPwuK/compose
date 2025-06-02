@@ -33,5 +33,5 @@ func execPhpInContainer(args []string) error {
 		helper.App, "php",
 	}, args...)
 
-	return execDockerCompose(execArgs)
+	return globalHelper.ExecDockerCompose(execArgs)
 }

@@ -4,6 +4,7 @@ import (
 	"docky/cmd/hosts"
 	"docky/config"
 	"docky/utils"
+	"docky/yaml/helper"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -52,7 +53,7 @@ func readDomain() string {
 }
 
 func pushToSimlinks(domain string) error {
-	filePath := filepath.Join(config.GetConfFilesDirPath(), "simlinks")
+	filePath := filepath.Join(config.GetConfFilesDirPath(), helper.App, "simlinks")
 	file, err := os.OpenFile(filePath, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
 		return err

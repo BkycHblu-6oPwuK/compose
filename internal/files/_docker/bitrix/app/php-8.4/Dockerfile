@@ -57,8 +57,7 @@ RUN chmod 600 /home/docky/.msmtprc
 RUN chown docky:docky /home/docky/.msmtprc
 
 COPY app/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY app/cron/docky.txt /var/spool/cron/crontabs/docky
-COPY app/cron/root.txt /var/spool/cron/crontabs/root
+COPY app/cron/docky /var/spool/cron/crontabs/docky
 RUN echo "" >> /var/spool/cron/crontabs/docky
 RUN echo "" >> /var/spool/cron/crontabs/root
 RUN chown docky:docky /var/spool/cron/crontabs/docky

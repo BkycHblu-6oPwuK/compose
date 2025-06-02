@@ -33,5 +33,5 @@ func execPm2InContainer(args []string) error {
 		helper.Node, "pm2",
 	}, args...)
 
-	return execDockerCompose(execArgs)
+	return globalHelper.ExecDockerCompose(execArgs)
 }

@@ -12,6 +12,7 @@ import (
 )
 
 var service string
+var dockerfile string
 var file string
 
 var publishCmd = &cobra.Command{
@@ -28,6 +29,9 @@ var publishCmd = &cobra.Command{
 		} else if file != "" {
 			err = publish.PublishFile(file)
 			text = "Файл " + file + " опубликован!"
+		} else if dockerfile != "" {
+			err = publish.PublishDockerFile(dockerfile)
+			text = "Докерфайл " + dockerfile + " опубликован!"
 		} else {
 			err = internal.PublishFiles()
 		}
@@ -43,5 +47,6 @@ var publishCmd = &cobra.Command{
 func init() {
 	publishCmd.Flags().StringVar(&service, "service", "", "Опубликовать сервис в docker-compose")
 	publishCmd.Flags().StringVar(&file, "file", "", "Опубликовать файл в директории"+config.ConfFilesDirName)
+	publishCmd.Flags().StringVar(&dockerfile, "dockerfile", "", "Опубликовать докерфайл в директории"+config.ConfFilesDirName)
 	rootCmd.AddCommand(publishCmd)
 }

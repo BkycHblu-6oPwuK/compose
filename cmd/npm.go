@@ -33,5 +33,5 @@ func execNpmInContainer(args []string) error {
 		helper.Node, "npm",
 	}, args...)
 
-	return execDockerCompose(execArgs)
+	return globalHelper.ExecDockerCompose(execArgs)
 }

@@ -1,5 +1,5 @@
 package helper
-//@todo убрать из volume конф.файлы, копировать все в докерфайлах. Тогда не будет проблем с кастомизацией. publish --file php.ini в _conf/php.ini + add volume
+
 import (
 	"docky/config"
 	"docky/yaml"
@@ -27,9 +27,11 @@ const (
 )
 
 var (
-	AvailableFramework = [2]string{
+	AvailableFramework = [4]string{
 		config.Bitrix,
 		config.Laravel,
+		config.Symfony,
+		config.Vanilla,
 	}
 	AvailableDb = [3]string{
 		Mysql,
@@ -45,15 +47,19 @@ var (
 func GetAvailableVersions(service string, yamlConfig *config.YamlConfig) []string {
 	switch service {
 	case App:
-		if yamlConfig.FrameworkName == config.Laravel {
+		switch yamlConfig.FrameworkName {
+		case config.Laravel, config.Symfony, config.Vanilla:
 			return []string{"8.2", "8.3", "8.4"}
+		default:
+			return []string{"7.4", "8.2", "8.3", "8.4"}
 		}
-		return []string{"7.4", "8.2", "8.3", "8.4"}
 	case Mysql:
-		if yamlConfig.FrameworkName == config.Laravel {
+		switch yamlConfig.FrameworkName {
+		case config.Laravel, config.Symfony, config.Vanilla:
 			return []string{"8.0", "latest"}
+		default:
+			return []string{"5.7", "8.0", "latest"}
 		}
-		return []string{"5.7", "8.0", "latest"}
 	case Postgres:
 		return []string{"17", "latest"}
 	default:
@@ -95,25 +101,6 @@ func BuildYaml(yamlConfig *config.YamlConfig) *yaml.ComposeFile {
 	fileBuilder := yaml.NewComposeFileBuilder().AddDefaultNetwork().AddService(Nginx, buildNginxService()).
 		AddService(App, buildAppService(yamlConfig))
 
-	switch yamlConfig.FrameworkName {
-	case config.Laravel:
-		buildLaravelYaml(fileBuilder, yamlConfig)
-	case config.Bitrix:
-		buildBitrixYaml(fileBuilder)
-	}
-
-	if yamlConfig.CreateNode {
-		fileBuilder.AddService(Node, buildNodeService())
-	}
-	if yamlConfig.CreateSphinx {
-		fileBuilder.AddService(Sphinx, buildSphinxService()).AddVolume(Sphinx_data, buildBaseVolume())
-	}
-	fileBuilder.AddService(Mailhog, buildMailHogService())
-	file := fileBuilder.Build()
-	return &file
-}
-
-func buildLaravelYaml(fileBuilder *yaml.ComposeFileBuilder, yamlConfig *config.YamlConfig) {
 	switch yamlConfig.DbType {
 	case Postgres:
 		fileBuilder.AddService(Postgres, buildPostgresService()).AddVolume(Postgres_data, buildBaseVolume())
@@ -127,8 +114,14 @@ func buildLaravelYaml(fileBuilder *yaml.ComposeFileBuilder, yamlConfig *config.Y
 	case Redis:
 		fileBuilder.AddService(Redis, buildRedisService()).AddVolume(Redis_data, buildBaseVolume())
 	}
-}
 
-func buildBitrixYaml(fileBuilder *yaml.ComposeFileBuilder) {
-	fileBuilder.AddService(Mysql, buildMysqlService()).AddVolume(Mysql_data, buildBaseVolume())
+	if yamlConfig.CreateNode {
+		fileBuilder.AddService(Node, buildNodeService())
+	}
+	if yamlConfig.CreateSphinx {
+		fileBuilder.AddService(Sphinx, buildSphinxService()).AddVolume(Sphinx_data, buildBaseVolume())
+	}
+	fileBuilder.AddService(Mailhog, buildMailHogService())
+	file := fileBuilder.Build()
+	return &file
 }

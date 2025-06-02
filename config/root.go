@@ -19,6 +19,8 @@ const (
 	ConfFilesDirName       string = "_conf"
 	Bitrix                 string = "bitrix"
 	Laravel                string = "laravel"
+	Vanilla                string = "vanilla"
+	Symfony                string = "symfony"
 	LocalHostsFileName     string = "hosts.txt"
 	DockerComposeFileName  string = "docker-compose.yml"
 	UserGroupVarName       string = "USERGROUP"

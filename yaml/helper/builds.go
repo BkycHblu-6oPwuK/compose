@@ -2,20 +2,25 @@ package helper
 
 import (
 	"docky/config"
-	"docky/yaml/build"
 	"docky/yaml/service"
+	"docky/yaml/service/build"
+	"docky/yaml/service/dependencies"
 	"docky/yaml/volume"
 )
 
-func buildBaseBuild(dockerfile string, args map[string]string) build.Build {
-	build := build.NewBuildBuilder().
+func getBaseBuildBuilder(dockerfile string, args map[string]string) *build.BuildBuilder {
+	builder := build.NewBuildBuilder().
 		SetContextDefault().
 		SetDockerfile(dockerfile).
 		SetBaseArgs()
 	for key, value := range args {
-		build.AddArg(key, value)
+		builder.AddArg(key, value)
 	}
-	return build.Build()
+	return builder
+}
+
+func getSimpleDependecyBulder(serviceName string) *dependencies.DependenciesBuilder {
+	return dependencies.NewDependenciesBuilder().AddSimple(serviceName)
 }
 
 func buildBaseVolume() volume.Volume {
@@ -24,11 +29,11 @@ func buildBaseVolume() volume.Volume {
 
 func buildNginxService() service.Service {
 	nginxService := service.NewServiceBuilder().
-		SetBuild(buildBaseBuild("${"+config.DockerPathVarName+"}/"+Nginx+"/"+Dockerfile+"", nil)).
+		WithBuildBuilder(getBaseBuildBuilder("${"+config.DockerPathVarName+"}/"+Nginx+"/"+Dockerfile+"", nil)).
 		AddVolume("${" + config.SitePathVarName + "}:" + config.SitePathInContainer).
 		AddPort("80:80").
 		AddPort("443:443").
-		AddDependency(App).
+		WithDependenciesBuilder(getSimpleDependecyBulder(App)).
 		AddDefaultNetwork().
 		SetContainerName(Nginx).
 		Build()
@@ -37,8 +42,8 @@ func buildNginxService() service.Service {
 
 func buildAppService(yamlConfig *config.YamlConfig) service.Service {
 	phpVersionVarName := "${" + config.PhpVersionVarName + "}"
-	appService := service.NewServiceBuilder().
-		SetBuild(buildBaseBuild("${"+config.DockerPathVarName+"}/"+App+"/php-"+phpVersionVarName+"/"+Dockerfile, nil)).
+	appServiceBuilder := service.NewServiceBuilder().
+		WithBuildBuilder(getBaseBuildBuilder("${"+config.DockerPathVarName+"}/"+App+"/php-"+phpVersionVarName+"/"+Dockerfile, nil)).
 		AddVolume("${"+config.SitePathVarName+"}:"+config.SitePathInContainer).
 		AddPort("9000:9000").
 		AddPort("6001:6001").
@@ -46,12 +51,12 @@ func buildAppService(yamlConfig *config.YamlConfig) service.Service {
 		AddDefaultNetwork().
 		AddEnvironment("XDEBUG_TRIGGER", "testTrig").
 		AddEnvironment("PHP_IDE_CONFIG", "serverName=xdebugServer").
-		SetContainerName(App).
-		Build()
+		SetContainerName(App)
+
 	if yamlConfig.DbType != Sqlite {
-		appService.Dependencies = []string{yamlConfig.DbType}
+		appServiceBuilder.WithDependenciesBuilder(getSimpleDependecyBulder(yamlConfig.DbType))
 	}
-	return appService
+	return appServiceBuilder.Build()
 }
 
 func buildMysqlService() service.Service {
@@ -88,13 +93,13 @@ func buildPostgresService() service.Service {
 
 func buildNodeService() service.Service {
 	nodeService := service.NewServiceBuilder().
-		SetBuild(buildBaseBuild("${"+config.DockerPathVarName+"}/"+Node+"/"+Dockerfile, map[string]string{
+		WithBuildBuilder(getBaseBuildBuilder("${"+config.DockerPathVarName+"}/"+Node+"/"+Dockerfile, map[string]string{
 			"NODE_VERSION": "${" + config.NodeVersionVarName + "}",
 		})).
 		AddPort("5173:5173").
 		AddPort("5174:5174").
 		AddVolume("${" + config.SitePathVarName + "}:" + config.SitePathInContainer).
-		AddDependency(App).
+		WithDependenciesBuilder(getSimpleDependecyBulder(App)).
 		AddDefaultNetwork().
 		SetCommandTailNull().
 		SetWorkingDir("${" + config.NodePathVarName + "}").
@@ -105,7 +110,7 @@ func buildNodeService() service.Service {
 
 func buildSphinxService() service.Service {
 	sphinxService := service.NewServiceBuilder().
-		SetBuild(buildBaseBuild("${"+config.DockerPathVarName+"}/"+Sphinx+"/"+Dockerfile, nil)).
+		WithBuildBuilder(getBaseBuildBuilder("${"+config.DockerPathVarName+"}/"+Sphinx+"/"+Dockerfile, nil)).
 		SetRestartAlways().
 		AddPort("9312:9312").
 		AddPort("9306:9306").
@@ -159,7 +164,7 @@ func buildPhpMyAdminService() service.Service {
 		AddEnvironment("PMA_PORT", "3306").
 		AddEnvironment("PMA_USER", "root").
 		AddEnvironment("PMA_PASSWORD", "root").
-		AddDependency(Mysql).
+		WithDependenciesBuilder(getSimpleDependecyBulder(Mysql)).
 		AddDefaultNetwork().
 		SetContainerName(PhpMyAdmin).
 		Build()

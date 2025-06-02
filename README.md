@@ -4,6 +4,8 @@
 
 - Под Bitrix смотрите в [bitrix.md](bitrix.md)
 - Под Laravel смотрите в [laravel.md](laravel.md)
+- Под Symfony смотрите в [symfony.md](symfony.md)
+- Под ванильный php смотрите в [vanilla.md](vanilla.md)
 
 А здесь общее описания работы с скриптом ```docky```
 
@@ -68,10 +70,19 @@ docky publish
 Можно опубликовать отдельные файлы командой:
 
 ```bash
-docky publish --file php.ini|xdebug.ini
+docky publish --file php.ini|xdebug.ini|cron_tasks|nginx_conf|simlinks
+docky publish --dockerfile app|nginx|node
 ```
 
-Публикация происходит в директорию ```_conf```
+Публикация происходит в директорию ```${CONF_PATH}```
+- php.ini|xdebug.ini|app-dockerfile - ${CONF_PATH}/app/php-${PHP_VERSION}/*
+- cron_tasks - ${CONF_PATH}/app/cron
+- simlinks - ${CONF_PATH}/app/simlinks
+- nginx_conf - ${CONF_PATH}/nginx/conf.d
+- nginx_dockerfile - ${CONF_PATH}/nginx/Dockerfile
+- node_dockerfile - ${CONF_PATH}/node/Dockerfile
+
+Так же добавляются необходимые volumes в сервисы docker-compose.yml
 
 опубликовать отдельный сервис в docker-compose.yaml:
 
@@ -83,7 +94,7 @@ docky publish --service node|mysql|postgres|sphinx|redis|memcached|mailhog|phpmy
 
 Сертификаты и ключи копируются в контейнер из /_docker/nginx/certs/ и запись о них уже добавлена в nginx.conf.
 
-Размещайте свои сертификаты в _conf/nginx/certs/ и добавляйте каждый сертификат через volume в docker-compose.yml
+Размещайте свои сертификаты в ${CONF_PATH}/nginx/certs/ и добавляйте каждый сертификат через volumes в docker-compose.yml
 
 ```
 - ${CONF_PATH}/nginx/certs/site:/usr/local/share/ca-certificates/site
@@ -98,7 +109,7 @@ docky publish --service node|mysql|postgres|sphinx|redis|memcached|mailhog|phpmy
 
 Выполните шаги из пункта "Импорт в windows" чтобы не было ошибок в браузере
 
-Так же вы можете добавлять файлы конфигурации для nginx через volume в docker-compose.yml
+Так же вы можете добавлять файлы конфигурации для nginx через volumes в docker-compose.yml
 
 ```
 - ${CONF_PATH}/nginx/site.conf:/etc/nginx/conf.d/site.conf
@@ -208,17 +219,16 @@ docky share
 /var/www/<path> /var/www/<path>
 ```
 
-Если же вам нужно дополнительные ссылки добавить, то формируйте все пути относительно структуры контейнера. После этого необходимо выполнить команду:
+Если же вам нужно дополнительные ссылки добавить, выполните команду:
 
 ```bash
-docky build
+docky publish --file simlinks
 ```
 
-Свой файл с сиволическими ссылками вы можете создать в _conf/simlinks и добавить volume в service app docker-compose.yml
+файл появится в - ${CONF_PATH}/app/simlinks
 
-```
-- ${CONF_PATH}/simlinks:/usr/simlinks_extra
-```
+формируйте все пути относительно структуры контейнера.
+
 
 ## Создание нового домена для основного сайта
 
@@ -229,7 +239,14 @@ docky build
 
 ## Добавление записей в hosts 
 
-При домена создается файл hosts.txt в ``` ${CONF_PATH/hosts.txt} ```
+При домена создается файл hosts.txt в ``` ${CONF_PATH}/hosts.txt ```
+А так же необходимые конфиги для nginx и сертификаты для этого домена в 
+- ${CONF_PATH}/app/nginx/${domain}.conf
+- ${CONF_PATH}/nginx/conf.d/${domain}.conf
+- ${CONF_PATH}/nginx/conf.d/snippets/${domain}.conf
+- ${CONF_PATH}/nginx/certs/${domain}/*
+
+и необходимые volumes для этих файлов в docker-compose.yml
 
 В целом вы можете добавлять в него записи вида:
 
@@ -261,7 +278,8 @@ docky init
 ```bash
 docky publish
 docky publish --service node|mysql|postgres|sphinx|redis|memcached|mailhog|phpmyadmin
-docky publish --file php.ini|xdebug.ini
+docky publish --file php.ini|xdebug.ini|cron_tasks|nginx_conf|simlinks
+docky publish --dockerfile app|nginx|node
 ```
 - `clean-cache` - очищает кэш директории скрипта, в ней храняться файлы конфигурации, докерфайлы
 ```bash
@@ -293,7 +311,11 @@ docky php -v
 ```
 - `artisan` - Выполнение команды artisan в контейнере с php для фреймворка laravel
 ```bash
-docky artisan migrate
+docky artisan {arg}
+```
+- `symfony` - Выполнение команды bin/console в контейнере с php для фреймворка symfony
+```bash
+docky symfony {arg}
 ```
 - `composer` - Выполнение команды composer в контейнере с php
 ```bash

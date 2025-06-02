@@ -33,5 +33,5 @@ func execComposerInContainer(args []string) error {
 		helper.App, "composer",
 	}, args...)
 
-	return execDockerCompose(execArgs)
+	return globalHelper.ExecDockerCompose(execArgs)
 }

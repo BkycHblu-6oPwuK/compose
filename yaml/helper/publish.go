@@ -28,7 +28,8 @@ func PublishMysqlService() error {
 		if !b.HasService(Mysql) {
 			appService, exists := b.GetService(App)
 			if exists {
-				serviceBuilder := service.NewServiceBuilderFrom(appService).RewriteServiceDependency(Postgres, Mysql)
+				serviceBuilder := service.NewServiceBuilderFrom(appService)
+				serviceBuilder.GetDependenciesBuilder().RewriteDependency(Postgres, Mysql)
 				b.AddService(App, serviceBuilder.Build())
 			}
 			b.AddService(Mysql, buildMysqlService()).
@@ -47,7 +48,8 @@ func PublishPostgresService() error {
 		if !b.HasService(Postgres) {
 			appService, exists := b.GetService(App)
 			if exists {
-				serviceBuilder := service.NewServiceBuilderFrom(appService).RewriteServiceDependency(Mysql, Postgres)
+				serviceBuilder := service.NewServiceBuilderFrom(appService)
+				serviceBuilder.GetDependenciesBuilder().RewriteDependency(Mysql, Postgres)
 				b.AddService(App, serviceBuilder.Build())
 			}
 			b.AddService(Postgres, buildPostgresService()).
@@ -120,10 +122,19 @@ func PublishPhpMyAdminService() error {
 	})
 }
 
-func PublishVolumes(serviceNames []string, volumes map[string][]string) error {
+func PublishVolumes(serviceNames []string, volumes map[string][]string, modifier func(s *service.Service) (isContinue bool, err error)) error {
 	return publishWithBuilder(func(b *yaml.ComposeFileBuilder) error {
 		for _, serviceName := range serviceNames {
 			if curService, exists := b.GetService(serviceName); exists {
+				if modifier != nil {
+					isContinue, err := modifier(&curService)
+					if err != nil {
+						return fmt.Errorf("ошибка при модификации сервиса %s: %w", serviceName, err)
+					}
+					if !isContinue {
+						continue
+					}
+				}
 				serviceBuilder := service.NewServiceBuilderFrom(curService)
 				if vols, ok := volumes[serviceName]; ok {
 					for _, vol := range vols {
@@ -132,6 +143,20 @@ func PublishVolumes(serviceNames []string, volumes map[string][]string) error {
 				}
 				b.AddService(serviceName, serviceBuilder.Build())
 			}
+		}
+		return nil
+	})
+}
+
+func PublishDockerfile(serviceName, dockerfile string) error {
+	return publishWithBuilder(func(b *yaml.ComposeFileBuilder) error {
+		if curService, exists := b.GetService(serviceName); exists {
+			if curService.Build.Dockerfile != "" {
+				curService.Build.Dockerfile = dockerfile
+				b.AddService(serviceName, curService)
+			}
+		} else {
+			return fmt.Errorf("сервис %s не найден", serviceName)
 		}
 		return nil
 	})

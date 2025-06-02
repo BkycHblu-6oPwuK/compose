@@ -20,21 +20,15 @@ nginx + php (7.4, 8.2, 8.3, 8.4) + mysql + node 23 версии
 
 По умолчанию cron включен и выполняется задание на запуск файла ```/var/www/bitrix/modules/main/tools/cron_events.php```
 
-Если необходимо добавить задания, то сделайте публикацию докерфайлов и файлов конфигурации
+Если необходимо добавить задания, то сделайте публикацию файлов с заданиями
 
 ```bash
-docky publish
+docky publish --file cron_tasks
 ```
 
 Запись заданий осуществляйте в:
-- `_docker/app/cron/docky.txt` - для пользователя сайта
-- `_docker/app/cron/root.txt` - для root пользователя
-
-выполните команду
-
-```bash
-docky build
-```
+- `_conf/app/cron/docky` - для пользователя сайта
+- `_conf/app/cron/root` - для root пользователя
 
 ## Почта
 

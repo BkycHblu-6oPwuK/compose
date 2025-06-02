@@ -10,6 +10,7 @@ import (
 
 	"docky/config"
 	"docky/utils"
+	"docky/yaml"
 	"docky/yaml/helper"
 )
 
@@ -122,6 +123,22 @@ func createVolumes(domainName string, isCreateSite bool) error {
 		helper.App,
 		helper.Nginx,
 	}
+	composeFile, err := yaml.Load()
+	if err != nil {
+		return fmt.Errorf("ошибка при загрузке docker-compose.yml: %v", err)
+	}
+	
+	nginxVolumeExists := false
+	nginxService, exists := composeFile.Services.Get(helper.Nginx)
+	if exists {
+		for _, vol := range nginxService.Volumes {
+			if strings.HasSuffix(vol, "/etc/nginx/conf.d") {
+				nginxVolumeExists = true
+				break
+			}
+		}
+	}
+
 	volumes := map[string][]string{
 		helper.App: {
 			"${" + config.ConfPathVarName + "}" + "/" + helper.App + "/" + helper.Nginx + "/" + domainName + ".conf" + ":/etc/nginx/conf.d/" + domainName + ".conf",
@@ -129,14 +146,16 @@ func createVolumes(domainName string, isCreateSite bool) error {
 		},
 		helper.Nginx: {
 			"${" + config.ConfPathVarName + "}" + "/" + helper.Nginx + "/certs/" + domainName + ":/usr/local/share/ca-certificates/" + domainName,
-			"${" + config.ConfPathVarName + "}" + "/" + helper.Nginx + "/conf.d/" + domainName + ".conf" + ":/etc/nginx/conf.d/" + domainName + ".conf",
-			"${" + config.ConfPathVarName + "}" + "/" + helper.Nginx + "/conf.d/snippets/" + domainName + ".conf" + ":/etc/nginx/conf.d/snippets/" + domainName + ".conf",
 		},
 	}
-	if isCreateSite {
-		volumes[helper.App] = append(volumes[helper.App], "${" + config.ConfPathVarName + "}" +"/"+ "simlinks:/usr/simlinks_extra")
+	if !nginxVolumeExists {
+		volumes[helper.Nginx] = append(volumes[helper.Nginx], "${" + config.ConfPathVarName + "}" + "/" + helper.Nginx + "/conf.d/" + domainName + ".conf" + ":/etc/nginx/conf.d/" + domainName + ".conf")
+		volumes[helper.Nginx] = append(volumes[helper.Nginx], "${" + config.ConfPathVarName + "}" + "/" + helper.Nginx + "/conf.d/snippets/" + domainName + ".conf" + ":/etc/nginx/conf.d/snippets/" + domainName + ".conf")
 	}
-	return helper.PublishVolumes(serviceNames, volumes)
+	if isCreateSite {
+		volumes[helper.App] = append(volumes[helper.App], "${"+config.ConfPathVarName+"}"+"/"+helper.App+"/"+"simlinks:/usr/simlinks_extra")
+	}
+	return helper.PublishVolumes(serviceNames, volumes, nil)
 }
 
 func renderStub(stubPath, outPath string, ctx certContext) error {

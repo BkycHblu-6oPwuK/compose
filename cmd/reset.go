@@ -66,7 +66,7 @@ func reset() error {
 	if err := composeFile.Save(); err != nil {
 		return err
 	}
-	return execDockerCompose([]string{"build"})
+	return globalHelper.ExecDockerCompose([]string{"build"})
 }
 
 func resetServices(services *utils.OrderedMap[string, myService.Service]) error {
