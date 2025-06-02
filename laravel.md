@@ -1,4 +1,4 @@
-# Конфигурация под битрикс
+# Конфигурация под laravel
 
 nginx + php (8.2, 8.3, 8.4) + mysql|postgres|sqlite + node 23 версии
 а так же redis|memcached
