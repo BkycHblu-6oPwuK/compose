@@ -70,14 +70,14 @@ docky publish
 Можно опубликовать отдельные файлы командой:
 
 ```bash
-docky publish --file php.ini|xdebug.ini|cron_tasks|nginx_conf|simlinks
+docky publish --file php.ini|xdebug.ini|cron_tasks|nginx_conf|symlinks
 docky publish --dockerfile app|nginx|node
 ```
 
 Публикация происходит в директорию ```${CONF_PATH}```
 - php.ini|xdebug.ini|app-dockerfile - ${CONF_PATH}/app/php-${PHP_VERSION}/*
 - cron_tasks - ${CONF_PATH}/app/cron
-- simlinks - ${CONF_PATH}/app/simlinks
+- symlinks - ${CONF_PATH}/app/symlinks
 - nginx_conf - ${CONF_PATH}/nginx/conf.d
 - nginx_dockerfile - ${CONF_PATH}/nginx/Dockerfile
 - node_dockerfile - ${CONF_PATH}/node/Dockerfile
@@ -213,7 +213,7 @@ docky share
 
 При запуске контейнера app запускается скрипт - _docker/bin/create_simlink.sh, он создает ссылки внутри контейнера и соответственно ссылки внутри сайта распространяются и на хост и другие контейнеры.
 
-Ссылки берутся из файла - ${DOCKER_PATH}/app/simlinks. Структура файла должна быть такой:
+Ссылки берутся из файла - ${DOCKER_PATH}/app/symlinks. Структура файла должна быть такой:
 
 ```
 /var/www/<path> /var/www/<path>
@@ -222,10 +222,10 @@ docky share
 Если же вам нужно дополнительные ссылки добавить, выполните команду:
 
 ```bash
-docky publish --file simlinks
+docky publish --file symlinks
 ```
 
-файл появится в - ${CONF_PATH}/app/simlinks
+файл появится в - ${CONF_PATH}/app/symlinks
 
 формируйте все пути относительно структуры контейнера.
 
@@ -278,7 +278,7 @@ docky init
 ```bash
 docky publish
 docky publish --service node|mysql|postgres|sphinx|redis|memcached|mailhog|phpmyadmin
-docky publish --file php.ini|xdebug.ini|cron_tasks|nginx_conf|simlinks
+docky publish --file php.ini|xdebug.ini|cron_tasks|nginx_conf|symlinks
 docky publish --dockerfile app|nginx|node
 ```
 - `clean-cache` - очищает кэш директории скрипта, в ней храняться файлы конфигурации, докерфайлы
