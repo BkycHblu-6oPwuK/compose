@@ -1,7 +1,7 @@
 package main
 
 import (
-	"docky/cmd/dockyphp/commands"
+	"docky/cmd/docky/commands"
 	"os"
 )
 

@@ -12,7 +12,11 @@ type BuildBuilder struct {
 
 func NewBuildBuilder() *BuildBuilder {
 	return &BuildBuilder{
-		build: Build{},
+		build: Build{
+			Context: "",
+			Dockerfile: "",
+			Args: make(map[string]string),
+		},
 	}
 }
 

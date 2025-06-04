@@ -65,7 +65,6 @@ func NewServiceBuilder() *ServiceBuilder {
 			Dependencies: dependencies.Dependencies{},
 			Networks:     []string{},
 			ExtraHosts:   []string{},
-			Secrets:      []string{},
 		},
 	}
 }

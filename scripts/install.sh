@@ -4,10 +4,9 @@ set -e
 
 BINARY_NAME="docky"
 INSTALL_DIR="/usr/local/bin"
-REPO="BkycHblu-6oPwuK/compose"
 
 echo "Установка $BINARY_NAME..."
-curl https://raw.githubusercontent.com/BkycHblu-6oPwuK/compose/main/bin/docky > "$INSTALL_DIR/$BINARY_NAME" || {
+curl https://raw.githubusercontent.com/BkycHblu-6oPwuK/docky/main/bin/docky > "$INSTALL_DIR/$BINARY_NAME" || {
     echo "Ошибка загрузки $BINARY_NAME"
     exit 1
 }

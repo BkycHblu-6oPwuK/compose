@@ -69,7 +69,7 @@ func PushToHosts() error {
 		if isWSL {
 			if lineInFile(hostFileWSL, entry) {
 				fmt.Println("запись уже есть в Windows hosts")
-				return nil
+				continue
 			}
 			if err := addToWindowsHosts(hostFile, entry); err != nil {
 				return fmt.Errorf("ошибка при добавлении в hosts Windows: %w", err)

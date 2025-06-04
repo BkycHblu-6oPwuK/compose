@@ -21,7 +21,7 @@ const (
 	Laravel                string = "laravel"
 	Vanilla                string = "vanilla"
 	Symfony                string = "symfony"
-	LocalHostsFileName     string = "hosts.txt"
+	LocalHostsFileName     string = "hosts"
 	DockerComposeFileName  string = "docker-compose.yml"
 	UserGroupVarName       string = "USERGROUP"
 	DockyFrameworkVarName  string = "DOCKY_FRAMEWORK"

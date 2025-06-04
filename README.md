@@ -2,10 +2,10 @@
 
 Настроенная обертка над docker compose для локальных проектов Bitrix, Laravel.
 
-- Под Bitrix смотрите в [bitrix.md](bitrix.md)
-- Под Laravel смотрите в [laravel.md](laravel.md)
-- Под Symfony смотрите в [symfony.md](symfony.md)
-- Под ванильный php смотрите в [vanilla.md](vanilla.md)
+- Под Bitrix смотрите в [bitrix.md](docs/bitrix.md)
+- Под Laravel смотрите в [laravel.md](docs/laravel.md)
+- Под Symfony смотрите в [symfony.md](docs/symfony.md)
+- Под ванильный php смотрите в [vanilla.md](docs/vanilla.md)
 
 А здесь общее описания работы с скриптом ```docky```
 
@@ -14,7 +14,7 @@
 Для установки можно запустить установочный скрипт с правами суперпользователя:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/BkycHblu-6oPwuK/compose/main/scripts/install.sh | sudo sh
+curl -sSL https://raw.githubusercontent.com/BkycHblu-6oPwuK/docky/main/scripts/install.sh | sudo sh
 ```
 Либо же можете вручую скачать бинарник (находится в build/docky) и поместить его в ```/usr/local/bin``` и не забудьте дать ему необходимые права (команда ```chmod +x```)
 
@@ -105,7 +105,7 @@ docky publish --service node|mysql|postgres|sphinx|redis|memcached|mailhog|phpmy
 
 Сервер одинаково настроен на работу как по http, так и по https.
 
-Более подробно - [certificates.md](certificates.md)
+Более подробно - [certificates.md](docs/certificates.md)
 
 Выполните шаги из пункта "Импорт в windows" чтобы не было ошибок в браузере
 
@@ -239,7 +239,7 @@ docky publish --file symlinks
 
 ## Добавление записей в hosts 
 
-При домена создается файл hosts.txt в ``` ${CONF_PATH}/hosts.txt ```
+При домена создается файл hosts в ``` ${CONF_PATH}/hosts ```
 А так же необходимые конфиги для nginx и сертификаты для этого домена в 
 - ${CONF_PATH}/app/nginx/${domain}.conf
 - ${CONF_PATH}/nginx/conf.d/${domain}.conf

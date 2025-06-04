@@ -2,7 +2,7 @@
 
 BINARY_NAME=docky
 BUILD_DIR=bin
-APP=cmd/dockyphp/main.go
+APP=cmd/docky/main.go
 
 build:
 	mkdir -p $(BUILD_DIR)
