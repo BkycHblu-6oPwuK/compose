@@ -26,44 +26,50 @@ func publishWithBuilder(modifier func(builder *composefile.ComposeFileBuilder) e
 	return final.Save(path)
 }
 
-func PublishMysqlService() error {
+func publishDatabaseService(target string, builderFunc func() service.Service) error {
+	alternatives := []string{Mysql, Mariadb, Postgres}
+	removeVolumes := map[string]string{
+		Mysql:    Mysql_data,
+		Mariadb:  Mariadb_data,
+		Postgres: Postgres_data,
+	}
+
 	return publishWithBuilder(func(b *composefile.ComposeFileBuilder) error {
-		if !b.HasService(Mysql) {
-			appService, exists := b.GetService(App)
-			if exists {
+		if !b.HasService(target) {
+			if appService, exists := b.GetService(App); exists {
 				serviceBuilder := service.NewServiceBuilderFrom(appService)
-				serviceBuilder.GetDependenciesBuilder().RewriteDependency(Postgres, Mysql)
+				deps := serviceBuilder.GetDependenciesBuilder()
+				for _, alt := range alternatives {
+					if alt != target && b.HasService(alt) {
+						deps.RewriteDependency(alt, target)
+					}
+				}
 				b.AddService(App, serviceBuilder.Build())
 			}
-			b.AddService(Mysql, buildMysqlService()).
-				AddVolume(Mysql_data, volume.Volume{})
+			b.AddService(target, builderFunc()).
+				AddVolume(removeVolumes[target], volume.Volume{})
 		}
-		if b.HasService(Postgres) {
-			b.RemoveService(Postgres).
-				RemoveVolume(Postgres_data)
+
+		for _, alt := range alternatives {
+			if alt != target && b.HasService(alt) {
+				b.RemoveService(alt).
+					RemoveVolume(removeVolumes[alt])
+			}
 		}
 		return nil
 	})
 }
 
+func PublishMysqlService() error {
+	return publishDatabaseService(Mysql, buildMysqlService)
+}
+
+func PublishMariadbService() error {
+	return publishDatabaseService(Mariadb, buildMariadbService)
+}
+
 func PublishPostgresService() error {
-	return publishWithBuilder(func(b *composefile.ComposeFileBuilder) error {
-		if !b.HasService(Postgres) {
-			appService, exists := b.GetService(App)
-			if exists {
-				serviceBuilder := service.NewServiceBuilderFrom(appService)
-				serviceBuilder.GetDependenciesBuilder().RewriteDependency(Mysql, Postgres)
-				b.AddService(App, serviceBuilder.Build())
-			}
-			b.AddService(Postgres, buildPostgresService()).
-				AddVolume(Postgres_data, volume.Volume{})
-		}
-		if b.HasService(Mysql) {
-			b.RemoveService(Mysql).
-				RemoveVolume(Mysql_data)
-		}
-		return nil
-	})
+	return publishDatabaseService(Postgres, buildPostgresService)
 }
 
 func PublishNodeService() error {
@@ -115,22 +121,30 @@ func PublishMailhogService() error {
 
 func PublishPhpMyAdminService() error {
 	return publishWithBuilder(func(b *composefile.ComposeFileBuilder) error {
-		if !b.HasService(Mysql) {
-			return fmt.Errorf("phpmyadmin работает только с mysql. В docker-compose не найден сервис %s", Mysql)
+		publish := func (host string) {
+			if !b.HasService(PhpMyAdmin) {
+				b.AddService(PhpMyAdmin, buildPhpMyAdminService(host))
+			}
 		}
-		if !b.HasService(PhpMyAdmin) {
-			b.AddService(PhpMyAdmin, buildPhpMyAdminService())
+		if b.HasService(Mysql) {
+			publish(Mysql)
+			return nil
+		} else if b.HasService(Mariadb) {
+			publish(Mariadb)
+			return nil
 		}
-		return nil
+		return fmt.Errorf("phpmyadmin работает только с mysql. В docker-compose не найден сервис %s или %s", Mysql, Mariadb)
 	})
 }
+
 // volumes map serviceName>>[]string volumes
-func PublishVolumes(volumes map[string][]string, modifier func(s *service.Service) (isContinue bool, err error)) error {
+func PublishVolumes(volumes map[string][]string, modifier func(b *service.ServiceBuilder) (isContinue bool, err error)) error {
 	return publishWithBuilder(func(b *composefile.ComposeFileBuilder) error {
 		for serviceName, volumes := range volumes {
 			if curService, exists := b.GetService(serviceName); exists {
+				serviceBuilder := service.NewServiceBuilderFrom(curService)
 				if modifier != nil {
-					isContinue, err := modifier(&curService)
+					isContinue, err := modifier(serviceBuilder)
 					if err != nil {
 						return fmt.Errorf("ошибка при модификации сервиса %s: %w", serviceName, err)
 					}
@@ -138,7 +152,6 @@ func PublishVolumes(volumes map[string][]string, modifier func(s *service.Servic
 						continue
 					}
 				}
-				serviceBuilder := service.NewServiceBuilderFrom(curService)
 				for _, vol := range volumes {
 					serviceBuilder.SetVolume(vol)
 				}

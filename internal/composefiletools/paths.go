@@ -73,6 +73,18 @@ func GetSiteVolumePath() string {
 	return GetVarNameString(config.SitePathVarName) + ":" + SitePathInContainer
 }
 
+func GetMysqlCnfPath(isConfPath bool) string {
+	return getBaseConfComposePath(isConfPath)+"/"+Mysql+"/my.cnf:/etc/mysql/conf.d/my.cnf"
+}
+
+func GetPostgresConfPath(isConfPath bool) string {
+	return getBaseConfComposePath(isConfPath)+"/"+Postgres+"/postgresql.conf:/etc/postgresql/postgresql.conf"
+}
+
+func GetSupervisordConfPath() string {
+	return getBaseConfComposePath(true)+"/"+App+"/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf"
+}
+
 func getBaseConfComposePath(isConfPath bool) string {
 	if isConfPath {
 		return GetVarNameString(config.ConfPathVarName)

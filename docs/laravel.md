@@ -1,6 +1,6 @@
 # Конфигурация под laravel
 
-nginx + php (8.2, 8.3, 8.4) + mysql|postgres|sqlite + node 23 версии
+nginx + php (8.2, 8.3, 8.4) + mysql|mariadb|postgres|sqlite + node 23 версии
 а так же redis|memcached
 
 ## Шаги публикации docker-compose.yml
@@ -9,7 +9,7 @@ nginx + php (8.2, 8.3, 8.4) + mysql|postgres|sqlite + node 23 версии
 
 0. Выбор фреймворка - laravel
 1. Выбрать версию php
-2. Выберите базу данных - mysql|postgres|sqlite
+2. Выберите базу данных - mysql|mariadb|postgres|sqlite
 3. Выбрать версию базы данных
 4. Выберите сервер для кеширования - redis|memcached|Пропуск
 5. Выполните пункты установщика laravel

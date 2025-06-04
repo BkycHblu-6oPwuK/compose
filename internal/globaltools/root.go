@@ -88,6 +88,7 @@ func InitEnvFile(yamlConfig *config.YamlConfig) error {
 		config.DockyFrameworkVarName + "=" + yamlConfig.FrameworkName.String(),
 		config.PhpVersionVarName + "=" + yamlConfig.PhpVersion,
 		config.MysqlVersionVarName + "=" + yamlConfig.MysqlVersion,
+		config.MariadbVersionVarName + "=" + yamlConfig.MariadbVersion,
 		config.PostgresVersionVarName + "=" + yamlConfig.PostgresVersion,
 		config.NodeVersionVarName + "=" + yamlConfig.NodeVersion,
 		config.NodePathVarName + "=" + yamlConfig.NodePath,

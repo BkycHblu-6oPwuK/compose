@@ -70,7 +70,7 @@ docky publish
 Можно опубликовать отдельные файлы командой:
 
 ```bash
-docky publish --file php.ini|xdebug.ini|cron_tasks|nginx_conf|symlinks
+docky publish --file php.ini|xdebug.ini|cron_tasks|nginx_conf|symlinks|mysql_conf|postgres_conf|supervisord_conf
 docky publish --dockerfile app|nginx|node
 ```
 
@@ -78,6 +78,9 @@ docky publish --dockerfile app|nginx|node
 - php.ini|xdebug.ini|app-dockerfile - ${CONF_PATH}/app/php-${PHP_VERSION}/*
 - cron_tasks - ${CONF_PATH}/app/cron
 - symlinks - ${CONF_PATH}/app/symlinks
+- mysql_conf - ${CONF_PATH}/mysql/my.cnf для сервисов mysql и mariadb
+- postgres_conf - ${CONF_PATH}/postgres/postgres.conf
+- supervisord_conf - ${CONF_PATH}/app/supervisord.conf
 - nginx_conf - ${CONF_PATH}/nginx/conf.d
 - nginx_dockerfile - ${CONF_PATH}/nginx/Dockerfile
 - node_dockerfile - ${CONF_PATH}/node/Dockerfile
@@ -87,7 +90,7 @@ docky publish --dockerfile app|nginx|node
 опубликовать отдельный сервис в docker-compose.yaml:
 
 ```bash
-docky publish --service node|mysql|postgres|sphinx|redis|memcached|mailhog|phpmyadmin
+docky publish --service node|mysql|mariadb|postgres|sphinx|redis|memcached|mailhog|phpmyadmin
 ```
 
 ## SSL сертификаты для nginx
@@ -277,8 +280,8 @@ docky init
 - `publish` - Публикация файлов конфигурации в директории с docker-compose.yml, доступен флаг ``` service ``` для публикации отдельного сервиса в docker-compose.yml
 ```bash
 docky publish
-docky publish --service node|mysql|postgres|sphinx|redis|memcached|mailhog|phpmyadmin
-docky publish --file php.ini|xdebug.ini|cron_tasks|nginx_conf|symlinks
+docky publish --service node|mysql|mariadb|postgres|sphinx|redis|memcached|mailhog|phpmyadmin
+docky publish --file php.ini|xdebug.ini|cron_tasks|nginx_conf|symlinks|mysql_conf|postgres_conf|supervisord_conf
 docky publish --dockerfile app|nginx|node
 ```
 - `clean-cache` - очищает кэш директории скрипта, в ней храняться файлы конфигурации, докерфайлы

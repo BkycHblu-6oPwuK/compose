@@ -64,11 +64,26 @@ func buildMysqlService() service.Service {
 		SetRestartAlways().
 		AddPort("8102:3306").
 		AddVolume(Mysql_data+":/var/lib/mysql").
-		AddVolume(GetVarNameString(config.DockerPathVarName)+"/"+Mysql+"/my.cnf:/etc/mysql/conf.d/my.cnf").
+		AddVolume(GetMysqlCnfPath(false)).
 		AddDefaultNetwork().
 		AddEnvironment("MYSQL_DATABASE", "site").
 		AddEnvironment("MYSQL_ROOT_PASSWORD", "root").
 		SetContainerName(Mysql).
+		Build()
+	return mysqlService
+}
+
+func buildMariadbService() service.Service {
+	mysqlService := service.NewServiceBuilder().
+		SetImage(Mariadb+":"+GetVarNameString(config.MariadbVersionVarName)).
+		SetRestartAlways().
+		AddPort("8102:3306").
+		AddVolume(Mariadb_data+":/var/lib/mysql").
+		AddVolume(GetMysqlCnfPath(false)).
+		AddDefaultNetwork().
+		AddEnvironment("MARIADB_DATABASE", "site").
+		AddEnvironment("MARIADB_ROOT_PASSWORD", "root").
+		SetContainerName(Mariadb).
 		Build()
 	return mysqlService
 }
@@ -79,11 +94,11 @@ func buildPostgresService() service.Service {
 		SetRestartAlways().
 		AddPort("5432:5432").
 		AddVolume(Postgres_data+":/var/lib/postgresql/data").
-		AddVolume(GetVarNameString(config.DockerPathVarName)+"/"+Postgres+"/postgresql.conf:/etc/postgresql/postgresql.conf").
+		AddVolume(GetPostgresConfPath(false)).
 		AddDefaultNetwork().
 		AddEnvironment("POSTGRES_DB", "site").
 		AddEnvironment("POSTGRES_PASSWORD", "root").
-		AddEnvironment("POSTGRES_USER", Postgres).
+		AddEnvironment("POSTGRES_USER", "root").
 		SetContainerName(Postgres).
 		SetCommand([]string{"-c", "config_file=/etc/postgresql/postgresql.conf"}).
 		Build()
@@ -154,16 +169,16 @@ func buildMailHogService() service.Service {
 	return mailHogService
 }
 
-func buildPhpMyAdminService() service.Service {
+func buildPhpMyAdminService(host string) service.Service {
 	phpMyAdminService := service.NewServiceBuilder().
 		SetImage("phpmyadmin/phpmyadmin").
 		SetRestartAlways().
 		AddPort("8080:80").
-		AddEnvironment("PMA_HOST", Mysql).
+		AddEnvironment("PMA_HOST", host).
 		AddEnvironment("PMA_PORT", "3306").
 		AddEnvironment("PMA_USER", "root").
 		AddEnvironment("PMA_PASSWORD", "root").
-		WithDependenciesBuilder(getSimpleDependecyBulder(Mysql)).
+		WithDependenciesBuilder(getSimpleDependecyBulder(host)).
 		AddDefaultNetwork().
 		SetContainerName(PhpMyAdmin).
 		Build()

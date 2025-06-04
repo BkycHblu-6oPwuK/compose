@@ -111,6 +111,8 @@ func chooseDbAndCache(yamlConfig *config.YamlConfig) {
 	switch yamlConfig.DbType {
 	case composefiletools.Mysql:
 		yamlConfig.MysqlVersion = readertools.GetOrChoose("Выберите версию mysql: ", yamlConfig.MysqlVersion, composefiletools.GetAvailableVersions(composefiletools.Mysql, yamlConfig))
+	case composefiletools.Mariadb:
+		yamlConfig.MariadbVersion = readertools.GetOrChoose("Выберите версию mariadb: ", yamlConfig.MariadbVersion, composefiletools.GetAvailableVersions(composefiletools.Mariadb, yamlConfig))
 	case composefiletools.Postgres:
 		yamlConfig.PostgresVersion = readertools.GetOrChoose("Выберите версию postgres: ", yamlConfig.PostgresVersion, composefiletools.GetAvailableVersions(composefiletools.Postgres, yamlConfig))
 	}

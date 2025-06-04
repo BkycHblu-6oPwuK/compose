@@ -1,6 +1,8 @@
 package service
 
 import (
+	"slices"
+
 	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile/network"
 	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile/service/build"
 	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile/service/dependencies"
@@ -82,6 +84,10 @@ func (b *ServiceBuilder) GetDependenciesBuilder() *dependencies.DependenciesBuil
 	return b.dependenciesBuilder
 }
 
+func (b *ServiceBuilder) GetService() *Service {
+	return &b.service
+}
+
 func (b *ServiceBuilder) SetImage(image string) *ServiceBuilder {
 	b.service.Image = image
 	return b
@@ -103,12 +109,7 @@ func (b *ServiceBuilder) AddVolume(volume string) *ServiceBuilder {
 }
 
 func (b *ServiceBuilder) SetVolume(volume string) *ServiceBuilder {
-	if b.volumeSet == nil {
-		b.volumeSet = make(map[string]struct{})
-		for _, vol := range b.service.Volumes {
-			b.volumeSet[vol] = struct{}{}
-		}
-	}
+	b.initVolumeSet()
 
 	if _, exists := b.volumeSet[volume]; exists {
 		return b
@@ -118,6 +119,50 @@ func (b *ServiceBuilder) SetVolume(volume string) *ServiceBuilder {
 	b.service.Volumes = append(b.service.Volumes, volume)
 
 	return b
+}
+
+func (b *ServiceBuilder) RemoveVolume(volume string) *ServiceBuilder {
+	b.initVolumeSet()
+
+	if _, exists := b.volumeSet[volume]; !exists {
+		return b
+	}
+
+	delete(b.volumeSet, volume)
+
+	if i := slices.Index(b.service.Volumes, volume); i != -1 {
+		b.service.Volumes = slices.Delete(b.service.Volumes, i, i+1)
+	}
+
+	return b
+}
+
+func (b *ServiceBuilder) FilterVolumes(filter func(string) bool) *ServiceBuilder {
+	b.initVolumeSet()
+
+	filtered := b.service.Volumes[:0]
+	newVolumeSet := make(map[string]struct{})
+
+	for _, volume := range b.service.Volumes {
+		if filter(volume) {
+			filtered = append(filtered, volume)
+			newVolumeSet[volume] = struct{}{}
+		}
+	}
+
+	b.service.Volumes = filtered
+	b.volumeSet = newVolumeSet
+
+	return b
+}
+
+func (b *ServiceBuilder) initVolumeSet() {
+	if b.volumeSet == nil {
+		b.volumeSet = make(map[string]struct{})
+		for _, vol := range b.service.Volumes {
+			b.volumeSet[vol] = struct{}{}
+		}
+	}
 }
 
 func (b *ServiceBuilder) AddPort(port string) *ServiceBuilder {

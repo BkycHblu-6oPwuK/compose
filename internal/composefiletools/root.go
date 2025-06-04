@@ -13,6 +13,7 @@ const (
 	ConfDir             string = "conf.d"
 	App                 string = "app"
 	Mysql               string = "mysql"
+	Mariadb             string = "mariadb"
 	Postgres            string = "postgres"
 	Sqlite              string = "sqlite"
 	Memcached           string = "memcached"
@@ -23,14 +24,16 @@ const (
 	Sphinx              string = "sphinx"
 	Bin                 string = "bin"
 	Mysql_data          string = "mysql_data"
+	Mariadb_data        string = "mariadb_data"
 	Postgres_data       string = "postgres_data"
 	Redis_data          string = "redis_data"
 	Sphinx_data         string = "sphinx_data"
 )
 
 var (
-	AvailableDb = [3]string{
+	AvailableDb = [4]string{
 		Mysql,
+		Mariadb,
 		Postgres,
 		Sqlite,
 	}
@@ -56,6 +59,8 @@ func GetAvailableVersions(service string, yamlConfig *config.YamlConfig) []strin
 		default:
 			return []string{"5.7", "8.0", "latest"}
 		}
+	case Mariadb:
+		return []string{"11.7", "latest"}
 	case Postgres:
 		return []string{"17", "latest"}
 	default:
@@ -63,35 +68,37 @@ func GetAvailableVersions(service string, yamlConfig *config.YamlConfig) []strin
 	}
 }
 
-func GetCurrentDbType() (string, error) {
-	compose, err := composefile.Load(config.GetDockerComposeFilePath())
-	if err != nil {
-		return "", err
-	}
-	switch true {
-	case compose.Services.Has(Mysql):
-		return Mysql, nil
-	case compose.Services.Has(Postgres):
-		return Postgres, nil
-	default:
-		return Sqlite, nil
-	}
-}
+// func GetCurrentDbType() (string, error) {
+// 	compose, err := composefile.Load(config.GetDockerComposeFilePath())
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	switch true {
+// 	case compose.Services.Has(Mysql):
+// 		return Mysql, nil
+// 	case compose.Services.Has(Postgres):
+// 		return Postgres, nil
+// 	case compose.Services.Has(Mariadb):
+// 		return Mariadb, nil
+// 	default:
+// 		return Sqlite, nil
+// 	}
+// }
 
-func GetCurrentServerCache() (string, error) {
-	compose, err := composefile.Load(config.GetDockerComposeFilePath())
-	if err != nil {
-		return "", err
-	}
-	switch true {
-	case compose.Services.Has(Redis):
-		return Redis, nil
-	case compose.Services.Has(Memcached):
-		return Memcached, nil
-	default:
-		return "", nil
-	}
-}
+// func GetCurrentServerCache() (string, error) {
+// 	compose, err := composefile.Load(config.GetDockerComposeFilePath())
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	switch true {
+// 	case compose.Services.Has(Redis):
+// 		return Redis, nil
+// 	case compose.Services.Has(Memcached):
+// 		return Memcached, nil
+// 	default:
+// 		return "", nil
+// 	}
+// }
 
 func BuildYaml(yamlConfig *config.YamlConfig) *composefile.ComposeFile {
 	fileBuilder := composefile.NewComposeFileBuilder().AddDefaultNetwork().AddService(Nginx, buildNginxService()).
@@ -102,6 +109,8 @@ func BuildYaml(yamlConfig *config.YamlConfig) *composefile.ComposeFile {
 		fileBuilder.AddService(Postgres, buildPostgresService()).AddVolume(Postgres_data, buildBaseVolume())
 	case Mysql:
 		fileBuilder.AddService(Mysql, buildMysqlService()).AddVolume(Mysql_data, buildBaseVolume())
+	case Mariadb: 
+		fileBuilder.AddService(Mariadb, buildMariadbService()).AddVolume(Mariadb_data, buildBaseVolume())
 	}
 
 	switch yamlConfig.ServerCache {

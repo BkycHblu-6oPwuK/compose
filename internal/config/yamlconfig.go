@@ -15,6 +15,7 @@ type YamlConfig struct {
 	DbType          string              // mysql, postgres, sqlite
 	PhpVersion      string
 	MysqlVersion    string
+	MariadbVersion  string
 	PostgresVersion string
 	NodeVersion     string
 	NodePath        string
@@ -31,6 +32,7 @@ const (
 	ConfPathVarName        string = "CONF_PATH"
 	PhpVersionVarName      string = "PHP_VERSION"
 	MysqlVersionVarName    string = "MYSQL_VERSION"
+	MariadbVersionVarName  string = "MARIADB_VERSION"
 	PostgresVersionVarName string = "POSTGRES_VERSION"
 	NodeVersionVarName     string = "NODE_VERSION"
 	SitePathVarName        string = "SITE_PATH"
@@ -61,6 +63,7 @@ func GetYamlConfig() *YamlConfig {
 			FrameworkName:   frameworkValue,
 			PhpVersion:      os.Getenv(PhpVersionVarName),
 			MysqlVersion:    os.Getenv(MysqlVersionVarName),
+			MariadbVersion:  os.Getenv(MariadbVersionVarName),
 			PostgresVersion: os.Getenv(PostgresVersionVarName),
 			NodeVersion:     nodeVersion,
 			NodePath:        os.Getenv(NodePathVarName),

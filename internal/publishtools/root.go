@@ -76,16 +76,54 @@ func PublishFile(file string) error {
 			composefiletools.Nginx: {
 				composefiletools.GetNginxConfVolumePath(""),
 			},
-		}, func(s *service.Service) (isContinue bool, err error) {
-			filtered := s.Volumes[:0]
-			for _, volume := range s.Volumes {
-				if !strings.Contains(volume, composefiletools.GetNginxConfPathInContainer()) {
-					filtered = append(filtered, volume)
-				}
-			}
-			s.Volumes = filtered
+		}, func(b *service.ServiceBuilder) (isContinue bool, err error) {
+			b.FilterVolumes(func(volume string) bool {
+				return !strings.Contains(volume, composefiletools.GetNginxConfPathInContainer())
+			})
 			return true, nil
 		})
+	case "mysql_conf":
+		pathToConf := filepath.Join(composefiletools.Mysql, "my.cnf")
+		filePath := filepath.Join(config.DockerFilesDirName, config.GetCurFramework().String(), pathToConf)
+		if err := files.PublishFile(filePath, filepath.Join(config.GetConfFilesDirPath(), pathToConf), true); err != nil {
+			return err
+		}
+		return composefiletools.PublishVolumes(map[string][]string{
+			composefiletools.Mysql: {
+				composefiletools.GetMysqlCnfPath(true),
+			},
+			composefiletools.Mariadb: {
+				composefiletools.GetMysqlCnfPath(true),
+			},
+		}, func(b *service.ServiceBuilder) (isContinue bool, err error) {
+			b.RemoveVolume(composefiletools.GetMysqlCnfPath(false))
+			return true, nil
+		})
+	case "postgres_conf":
+		pathToConf := filepath.Join(composefiletools.Postgres, "postgresql.conf")
+		filePath := filepath.Join(config.DockerFilesDirName, config.GetCurFramework().String(), pathToConf)
+		if err := files.PublishFile(filePath, filepath.Join(config.GetConfFilesDirPath(), pathToConf), true); err != nil {
+			return err
+		}
+		return composefiletools.PublishVolumes(map[string][]string{
+			composefiletools.Postgres: {
+				composefiletools.GetPostgresConfPath(true),
+			},
+		}, func(b *service.ServiceBuilder) (isContinue bool, err error) {
+			b.RemoveVolume(composefiletools.GetPostgresConfPath(false))
+			return true, nil
+		})
+	case "supervisord_conf":
+		pathToConf := filepath.Join(composefiletools.App, "supervisord.conf")
+		filePath := filepath.Join(config.DockerFilesDirName, config.GetCurFramework().String(), pathToConf)
+		if err := files.PublishFile(filePath, filepath.Join(config.GetConfFilesDirPath(), pathToConf), true); err != nil {
+			return err
+		}
+		return composefiletools.PublishVolumes(map[string][]string{
+			composefiletools.App: {
+				composefiletools.GetSupervisordConfPath(),
+			},
+		}, nil)
 	default:
 		return fmt.Errorf("неизвестный файл: %s", file)
 	}
@@ -111,6 +149,14 @@ func PublishService(service string) error {
 		}
 		yamlConfig := config.GetYamlConfig()
 		yamlConfig.MysqlVersion = readertools.GetOrChoose("Выберите версию mysql: ", yamlConfig.MysqlVersion, composefiletools.GetAvailableVersions(composefiletools.Mysql, yamlConfig))
+		return globaltools.InitEnvFile(yamlConfig)
+	case composefiletools.Mariadb:
+		err := composefiletools.PublishMariadbService()
+		if err != nil {
+			return err
+		}
+		yamlConfig := config.GetYamlConfig()
+		yamlConfig.MariadbVersion = readertools.GetOrChoose("Выберите версию mariadb: ", yamlConfig.MariadbVersion, composefiletools.GetAvailableVersions(composefiletools.Mariadb, yamlConfig))
 		return globaltools.InitEnvFile(yamlConfig)
 	case composefiletools.Postgres:
 		err := composefiletools.PublishPostgresService()
