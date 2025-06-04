@@ -273,6 +273,10 @@ docky hosts push
 
 ## Описание всех доступных команд
 
+- `version` - версия программы
+```bash
+docky version
+```
 - `init` - Создание docker-compose.yml в текущей директории и создает директорию ```site```
 ```bash
 docky init
@@ -287,10 +291,6 @@ docky publish --dockerfile app|nginx|node
 - `clean-cache` - очищает кэш директории скрипта, в ней храняться файлы конфигурации, докерфайлы
 ```bash
 docky clean-cache
-```
-- `reset` - сбрасывает docker-compose.yml под актуальную версию скрипта, при этом старый файл будет переименован и вы всегда можете откатить изменение
-```bash
-docky reset
 ```
 - `create site` - Создание нового сайта в директории сайта (./site/new-site.ru) для фреймворка bitrix
 ```bash
@@ -335,6 +335,10 @@ docky npx create-vite@latest my-app
 - `pm2` - Выполнение команды pm2 в контейнере с node js если он был установлен. Команда принимает такие же аргументы как и оригинальная pm2
 ```bash
 docky pm2 {arg}
+```
+- `reset` - сбрасывает docker-compose.yml под актуальную версию скрипта, при этом старый файл будет переименован и вы всегда можете откатить изменение
+```bash
+docky reset
 ```
 - `И все дефолтные команды docker-compose` - Выполнение любой команды docker-compose
 ```bash
