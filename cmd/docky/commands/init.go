@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/config"
+	"github.com/BkycHblu-6oPwuK/docky/v2/internal/config/framework"
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/globaltools"
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/initialization"
 
@@ -27,10 +28,10 @@ var initCmd = &cobra.Command{
 		}
 		yamlConfig := config.GetYamlConfig()
 		switch yamlConfig.FrameworkName {
-		case config.Laravel:
+		case framework.Laravel:
 			fmt.Println("Инициализация ларавел")
 			initialization.InitLaravel()
-		case config.Symfony:
+		case framework.Symfony:
 			fmt.Println("Инициализация симфони")
 			initialization.InitSymfony()
 		}

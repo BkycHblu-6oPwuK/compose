@@ -2,37 +2,33 @@ package composefiletools
 
 import (
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/config"
+	"github.com/BkycHblu-6oPwuK/docky/v2/internal/config/framework"
 	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile"
 )
 
 const (
-	Dockerfile    string = "Dockerfile"
-	Nginx         string = "nginx"
-	ConfDir       string = "conf.d"
-	App           string = "app"
-	Mysql         string = "mysql"
-	Postgres      string = "postgres"
-	Sqlite        string = "sqlite"
-	Memcached     string = "memcached"
-	Redis         string = "redis"
-	Mailhog       string = "mailhog"
-	PhpMyAdmin    string = "phpmyadmin"
-	Node          string = "node"
-	Sphinx        string = "sphinx"
-	Bin           string = "bin"
-	Mysql_data    string = "mysql_data"
-	Postgres_data string = "postgres_data"
-	Redis_data    string = "redis_data"
-	Sphinx_data   string = "sphinx_data"
+	Dockerfile          string = "Dockerfile"
+	Nginx               string = "nginx"
+	SitePathInContainer string = "/var/www"
+	ConfDir             string = "conf.d"
+	App                 string = "app"
+	Mysql               string = "mysql"
+	Postgres            string = "postgres"
+	Sqlite              string = "sqlite"
+	Memcached           string = "memcached"
+	Redis               string = "redis"
+	Mailhog             string = "mailhog"
+	PhpMyAdmin          string = "phpmyadmin"
+	Node                string = "node"
+	Sphinx              string = "sphinx"
+	Bin                 string = "bin"
+	Mysql_data          string = "mysql_data"
+	Postgres_data       string = "postgres_data"
+	Redis_data          string = "redis_data"
+	Sphinx_data         string = "sphinx_data"
 )
 
 var (
-	AvailableFramework = [4]string{
-		config.Bitrix,
-		config.Laravel,
-		config.Symfony,
-		config.Vanilla,
-	}
 	AvailableDb = [3]string{
 		Mysql,
 		Postgres,
@@ -48,14 +44,14 @@ func GetAvailableVersions(service string, yamlConfig *config.YamlConfig) []strin
 	switch service {
 	case App:
 		switch yamlConfig.FrameworkName {
-		case config.Laravel, config.Symfony, config.Vanilla:
+		case framework.Laravel, framework.Symfony, framework.Vanilla:
 			return []string{"8.2", "8.3", "8.4"}
 		default:
 			return []string{"7.4", "8.2", "8.3", "8.4"}
 		}
 	case Mysql:
 		switch yamlConfig.FrameworkName {
-		case config.Laravel, config.Symfony, config.Vanilla:
+		case framework.Laravel, framework.Symfony, framework.Vanilla:
 			return []string{"8.0", "latest"}
 		default:
 			return []string{"5.7", "8.0", "latest"}

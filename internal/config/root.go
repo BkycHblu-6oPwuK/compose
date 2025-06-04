@@ -9,40 +9,23 @@ import (
 	"time"
 
 	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/filetools"
-
-	"github.com/joho/godotenv"
 )
 
 const (
-	ScriptName             string = "docky"
-	SiteDirName            string = "site"
-	DockerFilesDirName     string = "_docker"
-	ConfFilesDirName       string = "_conf"
-	Bitrix                 string = "bitrix"
-	Laravel                string = "laravel"
-	Vanilla                string = "vanilla"
-	Symfony                string = "symfony"
-	LocalHostsFileName     string = "hosts"
-	DockerComposeFileName  string = "docker-compose.yml"
-	UserGroupVarName       string = "USERGROUP"
-	DockyFrameworkVarName  string = "DOCKY_FRAMEWORK"
-	DockerPathVarName      string = "DOCKER_PATH"
-	ConfPathVarName        string = "CONF_PATH"
-	PhpVersionVarName      string = "PHP_VERSION"
-	MysqlVersionVarName    string = "MYSQL_VERSION"
-	PostgresVersionVarName string = "POSTGRES_VERSION"
-	NodeVersionVarName     string = "NODE_VERSION"
-	SitePathVarName        string = "SITE_PATH"
-	NodePathVarName        string = "NODE_PATH"
-	SitePathInContainer    string = "/var/www"
-	EnvFile                string = ".env"
+	ScriptName            string = "docky"
+	SiteDirName           string = "site"
+	DockerFilesDirName    string = "_docker"
+	ConfFilesDirName      string = "_conf"
+	EnvFile               string = ".env"
+	LocalHostsFileName    string = "hosts"
+	DockerComposeFileName string = "docker-compose.yml"
 )
 
 var (
 	scriptCacheDir string
 	curDirPath     string // директория из которой запускается команда
 	workDirPath    string // директория с docker-compose.yml
-	Timestamp      = strconv.Itoa(int(time.Now().Unix()))
+	timeStamp      string
 )
 
 func getScriptCacheDir() string {
@@ -53,6 +36,7 @@ func getScriptCacheDir() string {
 	scriptCacheDir = filepath.Join(cacheDir, ScriptName)
 	return scriptCacheDir
 }
+
 func GetScriptCacheDir() string {
 	if scriptCacheDir != "" {
 		return scriptCacheDir
@@ -68,6 +52,7 @@ func getCurDirPath() string {
 	curDirPath = cwd
 	return curDirPath
 }
+
 func GetCurDirPath() string {
 	if curDirPath != "" {
 		return curDirPath
@@ -83,6 +68,7 @@ func getWorkDirPath() string {
 	workDirPath = strings.TrimSuffix(path, "/"+DockerComposeFileName)
 	return workDirPath
 }
+
 func GetWorkDirPath() string {
 	if workDirPath != "" {
 		return workDirPath
@@ -94,27 +80,14 @@ func GetSiteDirPath() string {
 	return filepath.Join(GetWorkDirPath(), SiteDirName)
 }
 
-func GetUserGroup() string {
-	userGroup := GetYamlConfig().UserGroup
-	if userGroup == "" {
-		userGroup = strconv.Itoa(os.Getegid())
-	}
-	return userGroup
-}
-func GetCurFramework() string {
-	frameworkName := os.Getenv(DockyFrameworkVarName)
-	if frameworkName != "" {
-		return frameworkName
-	}
-
-	return Bitrix
-}
 func GetDockerFilesDirPath() string {
 	return filepath.Join(GetWorkDirPath(), DockerFilesDirName)
 }
+
 func GetDockerFilesDirPathInCache() string {
-	return filepath.Join(GetScriptCacheDir(), DockerFilesDirName, GetCurFramework())
+	return filepath.Join(GetScriptCacheDir(), DockerFilesDirName, GetCurFramework().String())
 }
+
 func GetCurrentDockerFileDirPath() string {
 	path := GetDockerFilesDirPath()
 	if fileExists, _ := filetools.FileIsExists(path); fileExists {
@@ -123,26 +96,26 @@ func GetCurrentDockerFileDirPath() string {
 	path = GetDockerFilesDirPathInCache()
 	return path
 }
+
 func GetConfFilesDirPath() string {
 	return filepath.Join(GetWorkDirPath(), ConfFilesDirName)
 }
+
 func GetLocalHostsFilePath() string {
 	return filepath.Join(GetConfFilesDirPath(), LocalHostsFileName)
 }
+
 func GetDockerComposeFilePath() string {
 	return filepath.Join(GetWorkDirPath(), DockerComposeFileName)
 }
+
 func GetEnvFilePath() string {
 	return filepath.Join(GetWorkDirPath(), EnvFile)
 }
-func loadEnvFile() error {
-	envPath := GetEnvFilePath()
-	if fileExists, _ := filetools.FileIsExists(envPath); fileExists {
-		return godotenv.Load(envPath)
-	}
-	return nil
-}
 
-func init() {
-	loadEnvFile()
+func GetTimeStamp() string {
+	if timeStamp == "" {
+		timeStamp = strconv.Itoa(int(time.Now().Unix()))
+	}
+	return timeStamp
 }

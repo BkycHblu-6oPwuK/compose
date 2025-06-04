@@ -2,6 +2,7 @@ package orderedmap
 
 import (
 	"fmt"
+	"slices"
 
 	"gopkg.in/yaml.v3"
 )
@@ -47,7 +48,7 @@ func (om *OrderedMap[K, V]) Delete(key K) {
 	delete(om.values, key)
 	for i, k := range om.keys {
 		if k == key {
-			om.keys = append(om.keys[:i], om.keys[i+1:]...)
+			om.keys = slices.Delete(om.keys, i, i+1)
 			break
 		}
 	}

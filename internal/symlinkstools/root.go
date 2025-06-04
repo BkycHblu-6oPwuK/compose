@@ -14,7 +14,7 @@ const (
 	FileName = "symlinks"
 )
 
-func PushToSymlinks(symlinks map[string]string) error {
+func PushTosymlinks(symlinks map[string]string) error {
 	filePath := filepath.Join(config.GetConfFilesDirPath(), composefiletools.App, FileName)
 
 	if err := filetools.InitDirs(filepath.Dir(filePath)); err != nil {
@@ -27,7 +27,7 @@ func PushToSymlinks(symlinks map[string]string) error {
 	}
 	defer file.Close()
 
-	base := config.SitePathInContainer
+	base := composefiletools.SitePathInContainer
 
 	for src, dst := range symlinks {
 		line := fmt.Sprintf("%s/%s %s/%s\n", base, src, base, dst)

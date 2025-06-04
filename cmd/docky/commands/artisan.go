@@ -6,6 +6,7 @@ import (
 
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/composefiletools"
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/config"
+	"github.com/BkycHblu-6oPwuK/docky/v2/internal/config/framework"
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/globaltools"
 
 	"github.com/spf13/cobra"
@@ -26,7 +27,7 @@ var artisanCmd = &cobra.Command{
 
 func init() {
 	switch config.GetCurFramework() {
-	case config.Laravel:
+	case framework.Laravel:
 		rootCmd.AddCommand(artisanCmd)
 	}
 }

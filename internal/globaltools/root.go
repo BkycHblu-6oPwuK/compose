@@ -8,7 +8,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/BkycHblu-6oPwuK/docky/v2/internal/composefiletools"
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/config"
+	"github.com/BkycHblu-6oPwuK/docky/v2/internal/config/framework"
 	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/filetools"
 	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/readertools"
 )
@@ -47,7 +49,7 @@ func InitConfDir() error {
 }
 
 func InitNodeDir(yamlConfig *config.YamlConfig) error {
-	path := strings.TrimPrefix(yamlConfig.NodePath, config.SitePathInContainer)
+	path := strings.TrimPrefix(yamlConfig.NodePath, composefiletools.SitePathInContainer)
 	if path == "" {
 		return nil
 	}
@@ -60,13 +62,13 @@ func InitNodeDir(yamlConfig *config.YamlConfig) error {
 
 func InitNode(yamlConfig *config.YamlConfig) error {
 	switch yamlConfig.FrameworkName {
-	case config.Bitrix, config.Symfony, config.Vanilla:
+	case framework.Bitrix, framework.Symfony, framework.Vanilla:
 		if yamlConfig.NodePath == "" {
 			yamlConfig.NodePath = readertools.ReadPath("Введите путь до директории с package.json относительно директории сайта. Например (local/js/vite или пустая строка): ")
 		}
 		return InitNodeDir(yamlConfig)
-	case config.Laravel:
-		yamlConfig.NodePath = config.SitePathInContainer
+	case framework.Laravel:
+		yamlConfig.NodePath = composefiletools.SitePathInContainer
 	}
 	return nil
 }
@@ -78,17 +80,21 @@ func InitEnvFile(yamlConfig *config.YamlConfig) error {
 	}
 	defer outFile.Close()
 
-	if !strings.HasPrefix(yamlConfig.NodePath, config.SitePathInContainer) {
-		yamlConfig.NodePath = filepath.Join(config.SitePathInContainer, yamlConfig.NodePath)
+	if !strings.HasPrefix(yamlConfig.NodePath, composefiletools.SitePathInContainer) {
+		yamlConfig.NodePath = filepath.Join(composefiletools.SitePathInContainer, yamlConfig.NodePath)
 	}
 
 	data := []string{
-		config.DockyFrameworkVarName + "=" + yamlConfig.FrameworkName,
+		config.DockyFrameworkVarName + "=" + yamlConfig.FrameworkName.String(),
 		config.PhpVersionVarName + "=" + yamlConfig.PhpVersion,
 		config.MysqlVersionVarName + "=" + yamlConfig.MysqlVersion,
 		config.PostgresVersionVarName + "=" + yamlConfig.PostgresVersion,
 		config.NodeVersionVarName + "=" + yamlConfig.NodeVersion,
 		config.NodePathVarName + "=" + yamlConfig.NodePath,
+	}
+
+	if yamlConfig.UserGroup != "" {
+		data = append(data, config.UserGroupVarName+"="+yamlConfig.UserGroup)
 	}
 
 	for _, line := range data {

@@ -17,7 +17,7 @@ import (
 var (
 	dockerCachePath = config.GetDockerFilesDirPathInCache()
 	confPath        = config.GetConfFilesDirPath()
-	partialsPath    = filepath.Join(config.GetScriptCacheDir(), "partials", config.GetCurFramework())
+	partialsPath    = filepath.Join(config.GetScriptCacheDir(), "partials", config.GetCurFramework().String())
 
 	nginxCachePath      = filepath.Join(dockerCachePath, composefiletools.Nginx)
 	nginxCacheCertsPath = filepath.Join(nginxCachePath, "certs")
@@ -100,10 +100,6 @@ func CreateCerts(domainName, rootPath string, isCreateSite bool) error {
 }
 
 func createVolumes(domainName string, isCreateSite bool) error {
-	serviceNames := []string{
-		composefiletools.App,
-		composefiletools.Nginx,
-	}
 	composeFile, err := composefile.Load(config.GetDockerComposeFilePath())
 	if err != nil {
 		return fmt.Errorf("ошибка при загрузке docker-compose.yml: %v", err)
@@ -136,9 +132,9 @@ func createVolumes(domainName string, isCreateSite bool) error {
 		volumes[composefiletools.Nginx] = append(volumes[composefiletools.Nginx], composefiletools.GetNginxSnippetsConfVolumePath(domainNameConf))
 	}
 	if isCreateSite {
-		volumes[composefiletools.App] = append(volumes[composefiletools.App], composefiletools.GetSymlinksConfVolumePath())
+		volumes[composefiletools.App] = append(volumes[composefiletools.App], composefiletools.GetsymlinksConfVolumePath())
 	}
-	return composefiletools.PublishVolumes(serviceNames, volumes, nil)
+	return composefiletools.PublishVolumes(volumes, nil)
 }
 
 func renderStub(stubPath, outPath string, ctx certContext) error {

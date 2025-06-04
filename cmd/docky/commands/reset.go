@@ -61,7 +61,7 @@ func reset() error {
 	if err != nil {
 		return fmt.Errorf("ошибка при сбросе сервисов: %v", err)
 	}
-	err = os.Rename(dockerComposeFilePath, dockerComposeFilePath+config.Timestamp)
+	err = os.Rename(dockerComposeFilePath, dockerComposeFilePath+config.GetTimeStamp())
 	if err != nil {
 		return err
 	}

@@ -53,7 +53,7 @@ func GetCertificateConfVolumePath(toEndJoin string) string {
 	return hostPath + ":" + containerPath
 }
 
-func GetSymlinksConfVolumePath() string {
+func GetsymlinksConfVolumePath() string {
 	return getBaseConfComposePath(true) + "/" + App + "/symlinks:/usr/symlinks_extra"
 }
 
@@ -70,7 +70,7 @@ func GetCronConfVolumePath() string {
 }
 
 func GetSiteVolumePath() string {
-	return GetVarNameString(config.SitePathVarName) + ":" + config.SitePathInContainer
+	return GetVarNameString(config.SitePathVarName) + ":" + SitePathInContainer
 }
 
 func getBaseConfComposePath(isConfPath bool) string {

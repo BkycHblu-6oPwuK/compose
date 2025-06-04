@@ -124,10 +124,10 @@ func PublishPhpMyAdminService() error {
 		return nil
 	})
 }
-
-func PublishVolumes(serviceNames []string, volumes map[string][]string, modifier func(s *service.Service) (isContinue bool, err error)) error {
+// volumes map serviceName>>[]string volumes
+func PublishVolumes(volumes map[string][]string, modifier func(s *service.Service) (isContinue bool, err error)) error {
 	return publishWithBuilder(func(b *composefile.ComposeFileBuilder) error {
-		for _, serviceName := range serviceNames {
+		for serviceName, volumes := range volumes {
 			if curService, exists := b.GetService(serviceName); exists {
 				if modifier != nil {
 					isContinue, err := modifier(&curService)
@@ -139,10 +139,8 @@ func PublishVolumes(serviceNames []string, volumes map[string][]string, modifier
 					}
 				}
 				serviceBuilder := service.NewServiceBuilderFrom(curService)
-				if vols, ok := volumes[serviceName]; ok {
-					for _, vol := range vols {
-						serviceBuilder.SetVolume(vol)
-					}
+				for _, vol := range volumes {
+					serviceBuilder.SetVolume(vol)
 				}
 				b.AddService(serviceName, serviceBuilder.Build())
 			}

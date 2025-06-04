@@ -89,13 +89,13 @@ func PublishFiles() error {
 	targetDir := config.GetDockerFilesDirPath()
 	var err error = nil
 	if fileExists, _ := filetools.FileIsExists(targetDir); fileExists {
-		err = os.Rename(targetDir, targetDir+config.Timestamp)
+		err = os.Rename(targetDir, targetDir+config.GetTimeStamp())
 		if err != nil {
 			return err
 		}
 	}
 
-	err = extractAllFiles(targetDir, filepath.Join(rootDir, config.DockerFilesDirName, config.GetCurFramework()))
+	err = extractAllFiles(targetDir, filepath.Join(rootDir, config.DockerFilesDirName, config.GetCurFramework().String()))
 	if err != nil {
 		return err
 	}

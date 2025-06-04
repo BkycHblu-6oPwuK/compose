@@ -8,6 +8,7 @@ import (
 
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/composefiletools"
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/config"
+	"github.com/BkycHblu-6oPwuK/docky/v2/internal/config/framework"
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/files"
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/globaltools"
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/symlinkstools"
@@ -21,49 +22,43 @@ func PublishFile(file string) error {
 	case "php.ini", "xdebug.ini":
 		yamlConfig := config.GetYamlConfig()
 		pathToIni := filepath.Join(composefiletools.App, "php-"+yamlConfig.PhpVersion, file)
-		filePath := filepath.Join(config.DockerFilesDirName, config.GetCurFramework(), pathToIni)
+		filePath := filepath.Join(config.DockerFilesDirName, config.GetCurFramework().String(), pathToIni)
 		if err := files.PublishFile(filePath, filepath.Join(config.GetConfFilesDirPath(), pathToIni), false); err != nil {
 			return err
 		}
-		return composefiletools.PublishVolumes([]string{
-			composefiletools.App,
-		}, map[string][]string{
+		return composefiletools.PublishVolumes(map[string][]string{
 			composefiletools.App: {
 				composefiletools.GetPhpConfVolumePath(file, true),
 			},
 		}, nil)
 	case symlinkstools.FileName:
-		pathToSymlinks := filepath.Join(config.GetConfFilesDirPath(), composefiletools.App, symlinkstools.FileName)
-		if exists, _ := filetools.FileIsExists(pathToSymlinks); !exists {
-			if err := filetools.InitDirs(filepath.Dir(pathToSymlinks)); err != nil {
+		pathTosymlinks := filepath.Join(config.GetConfFilesDirPath(), composefiletools.App, symlinkstools.FileName)
+		if exists, _ := filetools.FileIsExists(pathTosymlinks); !exists {
+			if err := filetools.InitDirs(filepath.Dir(pathTosymlinks)); err != nil {
 				return err
 			}
 
-			file, err := os.Create(pathToSymlinks)
+			file, err := os.Create(pathTosymlinks)
 			if err != nil {
 				return fmt.Errorf("ошибка при создании файла: %w", err)
 			}
 			defer file.Close()
 		}
-		return composefiletools.PublishVolumes([]string{
-			composefiletools.App,
-		}, map[string][]string{
+		return composefiletools.PublishVolumes(map[string][]string{
 			composefiletools.App: {
-				composefiletools.GetSymlinksConfVolumePath(),
+				composefiletools.GetsymlinksConfVolumePath(),
 			},
 		}, nil)
 	case "cron_tasks":
 		curFramework := config.GetCurFramework()
 		switch curFramework {
-		case config.Bitrix, config.Symfony, config.Vanilla:
+		case framework.Bitrix, framework.Symfony, framework.Vanilla:
 			pathToCron := filepath.Join(composefiletools.App, "cron")
-			filePath := filepath.Join(config.DockerFilesDirName, curFramework, pathToCron)
+			filePath := filepath.Join(config.DockerFilesDirName, curFramework.String(), pathToCron)
 			if err := files.PublishFile(filePath, filepath.Join(config.GetConfFilesDirPath(), pathToCron), true); err != nil {
 				return err
 			}
-			return composefiletools.PublishVolumes([]string{
-				composefiletools.App,
-			}, map[string][]string{
+			return composefiletools.PublishVolumes(map[string][]string{
 				composefiletools.App: {
 					composefiletools.GetCronConfVolumePath(),
 				},
@@ -73,13 +68,11 @@ func PublishFile(file string) error {
 		}
 	case "nginx_conf":
 		pathToConf := filepath.Join(composefiletools.Nginx, "conf.d")
-		filePath := filepath.Join(config.DockerFilesDirName, config.GetCurFramework(), pathToConf)
+		filePath := filepath.Join(config.DockerFilesDirName, config.GetCurFramework().String(), pathToConf)
 		if err := files.PublishFile(filePath, filepath.Join(config.GetConfFilesDirPath(), pathToConf), true); err != nil {
 			return err
 		}
-		return composefiletools.PublishVolumes([]string{
-			composefiletools.Nginx,
-		}, map[string][]string{
+		return composefiletools.PublishVolumes(map[string][]string{
 			composefiletools.Nginx: {
 				composefiletools.GetNginxConfVolumePath(""),
 			},
@@ -147,14 +140,14 @@ func PublishDockerFile(service string) error {
 	case composefiletools.App:
 		yamlConfig := config.GetYamlConfig()
 		pathToDockerfile := filepath.Join(composefiletools.App, "php-"+yamlConfig.PhpVersion, composefiletools.Dockerfile)
-		filePath := filepath.Join(config.DockerFilesDirName, config.GetCurFramework(), pathToDockerfile)
+		filePath := filepath.Join(config.DockerFilesDirName, config.GetCurFramework().String(), pathToDockerfile)
 		if err := files.PublishFile(filePath, filepath.Join(config.GetConfFilesDirPath(), pathToDockerfile), true); err != nil {
 			return err
 		}
 		return composefiletools.PublishDockerfile(service, composefiletools.GetPhpConfComposePath(composefiletools.Dockerfile, true))
 	case composefiletools.Node, composefiletools.Nginx:
 		pathToDockerfile := filepath.Join(service, composefiletools.Dockerfile)
-		filePath := filepath.Join(config.DockerFilesDirName, config.GetCurFramework(), pathToDockerfile)
+		filePath := filepath.Join(config.DockerFilesDirName, config.GetCurFramework().String(), pathToDockerfile)
 		if err := files.PublishFile(filePath, filepath.Join(config.GetConfFilesDirPath(), pathToDockerfile), true); err != nil {
 			return err
 		}

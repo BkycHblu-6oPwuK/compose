@@ -13,6 +13,7 @@ import (
 	"unicode/utf16"
 
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/certstools"
+	"github.com/BkycHblu-6oPwuK/docky/v2/internal/composefiletools"
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/config"
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/symlinkstools"
 	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/filetools"
@@ -100,7 +101,7 @@ func CreateDomain() error {
 		return err
 	}
 
-	if err := certstools.CreateCerts(domain, config.SitePathInContainer, false); err != nil {
+	if err := certstools.CreateCerts(domain, composefiletools.SitePathInContainer, false); err != nil {
 		return err
 	}
 
@@ -113,7 +114,7 @@ func CreateSite() error {
 		return err
 	}
 
-	if err := pushToSymlinks(domain); err != nil {
+	if err := pushTosymlinks(domain); err != nil {
 		return err
 	}
 
@@ -122,15 +123,15 @@ func CreateSite() error {
 		return fmt.Errorf("ошибка инициализации директории сайта: %w", err)
 	}
 
-	if err := certstools.CreateCerts(domain, filepath.Join(config.SitePathInContainer, domain), true); err != nil {
+	if err := certstools.CreateCerts(domain, filepath.Join(composefiletools.SitePathInContainer, domain), true); err != nil {
 		return err
 	}
 
 	return PushToHosts()
 }
 
-func pushToSymlinks(domain string) error {
-	return symlinkstools.PushToSymlinks(map[string]string{
+func pushTosymlinks(domain string) error {
+	return symlinkstools.PushTosymlinks(map[string]string{
 		"bitrix": domain + "/bitrix",
 		"local":  domain + "/local",
 		"upload": domain + "/upload",
@@ -236,7 +237,7 @@ func lineInFile(path, needle string) bool {
 	if err != nil {
 		return false
 	}
-	for _, line := range strings.Split(string(data), "\n") {
+	for line := range strings.SplitSeq(string(data), "\n") {
 		if strings.TrimSpace(line) == needle {
 			return true
 		}

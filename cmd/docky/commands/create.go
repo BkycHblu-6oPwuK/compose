@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/config"
+	"github.com/BkycHblu-6oPwuK/docky/v2/internal/config/framework"
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/globaltools"
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/hoststools"
 
@@ -44,7 +45,7 @@ var createDomainModuleCmd = &cobra.Command{
 
 func init() {
 	switch config.GetCurFramework() {
-	case config.Bitrix:
+	case framework.Bitrix:
 		createCmd.AddCommand(createSiteModuleCmd)
 	}
 	createCmd.AddCommand(createDomainModuleCmd)

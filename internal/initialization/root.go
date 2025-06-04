@@ -7,6 +7,7 @@ import (
 
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/composefiletools"
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/config"
+	"github.com/BkycHblu-6oPwuK/docky/v2/internal/config/framework"
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/globaltools"
 	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/filetools"
 	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/readertools"
@@ -18,17 +19,17 @@ func InitDockerComposeFile() error {
 	}
 
 	yamlConfig := config.GetYamlConfig()
-	yamlConfig.FrameworkName = readertools.GetOrChoose("Ваш фреймворк: ", yamlConfig.FrameworkName, composefiletools.AvailableFramework[:])
+	yamlConfig.FrameworkName = framework.ParseFramework(readertools.GetOrChoose("Ваш фреймворк: ", yamlConfig.FrameworkName.String(), framework.GetAllStrings()))
 	yamlConfig.PhpVersion = readertools.GetOrChoose("Выберите версию php: ", "", composefiletools.GetAvailableVersions(composefiletools.App, yamlConfig))
 
 	switch yamlConfig.FrameworkName {
-	case config.Laravel:
+	case framework.Laravel:
 		if err := initLaravelConfig(yamlConfig); err != nil {
 			return err
 		}
-	case config.Vanilla:
+	case framework.Vanilla:
 		initVanillaConfig(yamlConfig)
-	case config.Symfony:
+	case framework.Symfony:
 		initSymfonyConfig(yamlConfig)
 	default:
 		initDefaultConfig(yamlConfig)
@@ -102,7 +103,7 @@ func handleExistingComposeFile() error {
 	if !readertools.AskYesNo("Файл docker-compose.yml уже существует, создать новый?") {
 		return nil
 	}
-	return os.Rename(composeFilePath, composeFilePath+config.Timestamp)
+	return os.Rename(composeFilePath, composeFilePath+config.GetTimeStamp())
 }
 
 func chooseDbAndCache(yamlConfig *config.YamlConfig) {
