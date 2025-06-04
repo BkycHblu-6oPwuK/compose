@@ -16,7 +16,6 @@ import (
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/files"
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/globaltools"
 	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile"
-	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile/network"
 	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile/service"
 	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/filetools"
 	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/orderedmap"
@@ -169,7 +168,6 @@ func resetServices(services *orderedmap.OrderedMap[string, service.Service]) err
 			}
 			curService.Environment = newEnv
 		}
-		curService.Networks = []string{network.DefaultName}
 		services.Set(name, curService)
 	})
 	yamlConfig := config.GetYamlConfig()
