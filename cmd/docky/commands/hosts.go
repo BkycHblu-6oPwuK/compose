@@ -1,10 +1,11 @@
 package commands
 
 import (
-	"docky/internal/globaltools"
-	"docky/internal/hoststools"
 	"fmt"
 	"os"
+
+	"github.com/BkycHblu-6oPwuK/docky/internal/globaltools"
+	"github.com/BkycHblu-6oPwuK/docky/internal/hoststools"
 
 	"github.com/spf13/cobra"
 )

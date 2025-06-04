@@ -1,11 +1,12 @@
 package composefiletools
 
 import (
-	"docky/internal/config"
-	"docky/pkg/composefile"
-	"docky/pkg/composefile/service"
-	"docky/pkg/composefile/volume"
 	"fmt"
+
+	"github.com/BkycHblu-6oPwuK/docky/internal/config"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/service"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/volume"
 )
 
 func publishWithBuilder(modifier func(builder *composefile.ComposeFileBuilder) error) error {

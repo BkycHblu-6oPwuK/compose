@@ -1,8 +1,8 @@
 package composefiletools
 
 import (
-	"docky/internal/config"
-	"docky/pkg/composefile"
+	"github.com/BkycHblu-6oPwuK/docky/internal/config"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile"
 )
 
 const (

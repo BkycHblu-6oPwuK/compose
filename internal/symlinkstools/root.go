@@ -1,12 +1,13 @@
 package symlinkstools
 
 import (
-	"docky/internal/composefiletools"
-	"docky/internal/config"
-	"docky/pkg/filetools"
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/BkycHblu-6oPwuK/docky/internal/composefiletools"
+	"github.com/BkycHblu-6oPwuK/docky/internal/config"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/filetools"
 )
 
 const (

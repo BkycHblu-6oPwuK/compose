@@ -1,10 +1,11 @@
 package commands
 
 import (
-	"docky/internal/composefiletools"
-	"docky/internal/globaltools"
 	"fmt"
 	"os"
+
+	"github.com/BkycHblu-6oPwuK/docky/internal/composefiletools"
+	"github.com/BkycHblu-6oPwuK/docky/internal/globaltools"
 
 	"github.com/spf13/cobra"
 )

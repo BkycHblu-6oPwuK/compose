@@ -1,8 +1,9 @@
 package main
 
 import (
-	"docky/cmd/docky/commands"
 	"os"
+
+	"github.com/BkycHblu-6oPwuK/docky/cmd/docky/commands"
 )
 
 func main() {

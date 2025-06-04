@@ -1,14 +1,15 @@
 package composefile
 
 import (
-	"docky/pkg/orderedmap"
-	"docky/pkg/composefile/network"
-	"docky/pkg/composefile/secret"
-	"docky/pkg/composefile/service"
-	"docky/pkg/composefile/volume"
 	"fmt"
 	"os"
 	"sync"
+
+	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/network"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/secret"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/service"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/volume"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/orderedmap"
 
 	"gopkg.in/yaml.v3"
 )

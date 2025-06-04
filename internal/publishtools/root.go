@@ -1,18 +1,19 @@
 package publishtools
 
 import (
-	"docky/internal/composefiletools"
-	"docky/internal/config"
-	"docky/internal/files"
-	"docky/internal/globaltools"
-	"docky/internal/symlinkstools"
-	"docky/pkg/composefile/service"
-	"docky/pkg/filetools"
-	"docky/pkg/readertools"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/BkycHblu-6oPwuK/docky/internal/composefiletools"
+	"github.com/BkycHblu-6oPwuK/docky/internal/config"
+	"github.com/BkycHblu-6oPwuK/docky/internal/files"
+	"github.com/BkycHblu-6oPwuK/docky/internal/globaltools"
+	"github.com/BkycHblu-6oPwuK/docky/internal/symlinkstools"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/service"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/filetools"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/readertools"
 )
 
 func PublishFile(file string) error {

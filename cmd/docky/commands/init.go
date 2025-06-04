@@ -1,11 +1,12 @@
 package commands
 
 import (
-	"docky/internal/config"
-	"docky/internal/globaltools"
-	"docky/internal/initialization"
 	"fmt"
 	"os"
+
+	"github.com/BkycHblu-6oPwuK/docky/internal/config"
+	"github.com/BkycHblu-6oPwuK/docky/internal/globaltools"
+	"github.com/BkycHblu-6oPwuK/docky/internal/initialization"
 
 	"github.com/spf13/cobra"
 )

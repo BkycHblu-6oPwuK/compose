@@ -1,14 +1,15 @@
 package initialization
 
 import (
-	"docky/internal/composefiletools"
-	"docky/internal/config"
-	"docky/internal/globaltools"
-	"docky/pkg/filetools"
-	"docky/pkg/readertools"
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/BkycHblu-6oPwuK/docky/internal/composefiletools"
+	"github.com/BkycHblu-6oPwuK/docky/internal/config"
+	"github.com/BkycHblu-6oPwuK/docky/internal/globaltools"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/filetools"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/readertools"
 )
 
 func InitDockerComposeFile() error {

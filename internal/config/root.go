@@ -1,13 +1,14 @@
 package config
 
 import (
-	"docky/pkg/filetools"
 	"log"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/BkycHblu-6oPwuK/docky/pkg/filetools"
 
 	"github.com/joho/godotenv"
 )

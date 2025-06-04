@@ -3,11 +3,6 @@ package hoststools
 import (
 	"bufio"
 	"bytes"
-	"docky/internal/certstools"
-	"docky/internal/config"
-	"docky/internal/symlinkstools"
-	"docky/pkg/filetools"
-	"docky/pkg/readertools"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -16,6 +11,12 @@ import (
 	"path/filepath"
 	"strings"
 	"unicode/utf16"
+
+	"github.com/BkycHblu-6oPwuK/docky/internal/certstools"
+	"github.com/BkycHblu-6oPwuK/docky/internal/config"
+	"github.com/BkycHblu-6oPwuK/docky/internal/symlinkstools"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/filetools"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/readertools"
 )
 
 func PushToLocalHosts(domain string) error {

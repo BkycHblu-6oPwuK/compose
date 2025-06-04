@@ -1,11 +1,11 @@
 package composefiletools
 
 import (
-	"docky/internal/config"
-	"docky/pkg/composefile/service"
-	"docky/pkg/composefile/service/build"
-	"docky/pkg/composefile/service/dependencies"
-	"docky/pkg/composefile/volume"
+	"github.com/BkycHblu-6oPwuK/docky/internal/config"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/service"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/service/build"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/service/dependencies"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/volume"
 )
 
 func getBaseBuildBuilder(dockerfile string, args map[string]string) *build.BuildBuilder {
@@ -92,7 +92,7 @@ func buildPostgresService() service.Service {
 
 func buildNodeService() service.Service {
 	nodeService := service.NewServiceBuilder().
-		WithBuildBuilder(getBaseBuildBuilder(GetVarNameString(config.DockerPathVarName) + "/"+Node+"/"+Dockerfile, map[string]string{
+		WithBuildBuilder(getBaseBuildBuilder(GetVarNameString(config.DockerPathVarName)+"/"+Node+"/"+Dockerfile, map[string]string{
 			"NODE_VERSION": GetVarNameString(config.NodeVersionVarName),
 		})).
 		AddPort("5173:5173").
@@ -109,7 +109,7 @@ func buildNodeService() service.Service {
 
 func buildSphinxService() service.Service {
 	sphinxService := service.NewServiceBuilder().
-		WithBuildBuilder(getBaseBuildBuilder(GetVarNameString(config.DockerPathVarName) + "/"+Sphinx+"/"+Dockerfile, nil)).
+		WithBuildBuilder(getBaseBuildBuilder(GetVarNameString(config.DockerPathVarName)+"/"+Sphinx+"/"+Dockerfile, nil)).
 		SetRestartAlways().
 		AddPort("9312:9312").
 		AddPort("9306:9306").

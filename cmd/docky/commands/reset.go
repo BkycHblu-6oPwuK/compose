@@ -5,20 +5,21 @@ package commands
  */
 
 import (
-	"docky/internal/composefiletools"
-	"docky/internal/config"
-	"docky/internal/files"
-	"docky/internal/globaltools"
-	"docky/pkg/composefile"
-	"docky/pkg/composefile/network"
-	"docky/pkg/composefile/service"
-	"docky/pkg/filetools"
-	"docky/pkg/orderedmap"
 	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/BkycHblu-6oPwuK/docky/internal/composefiletools"
+	"github.com/BkycHblu-6oPwuK/docky/internal/config"
+	"github.com/BkycHblu-6oPwuK/docky/internal/files"
+	"github.com/BkycHblu-6oPwuK/docky/internal/globaltools"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/network"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/service"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/filetools"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/orderedmap"
 
 	"github.com/spf13/cobra"
 )

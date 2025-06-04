@@ -1,15 +1,16 @@
 package globaltools
 
 import (
-	"docky/internal/config"
-	"docky/pkg/filetools"
-	"docky/pkg/readertools"
 	"errors"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/BkycHblu-6oPwuK/docky/internal/config"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/filetools"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/readertools"
 )
 
 func ValidateWorkDir() {

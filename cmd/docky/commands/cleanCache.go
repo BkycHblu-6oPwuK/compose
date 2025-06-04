@@ -1,9 +1,10 @@
 package commands
 
 import (
-	"docky/internal/files"
 	"fmt"
 	"os"
+
+	"github.com/BkycHblu-6oPwuK/docky/internal/files"
 
 	"github.com/spf13/cobra"
 )

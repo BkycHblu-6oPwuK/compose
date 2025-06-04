@@ -1,11 +1,11 @@
 package service
 
 import (
-	"docky/pkg/composefile/network"
-	"docky/pkg/composefile/service/build"
-	"docky/pkg/composefile/service/dependencies"
-	"docky/pkg/composefile/service/healthcheck"
-	"docky/pkg/composefile/service/logging"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/network"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/service/build"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/service/dependencies"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/service/healthcheck"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/service/logging"
 )
 
 type Service struct {

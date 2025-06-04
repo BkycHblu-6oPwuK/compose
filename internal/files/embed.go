@@ -1,13 +1,14 @@
 package files
 
 import (
-	"docky/internal/config"
-	"docky/pkg/filetools"
 	"embed"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/BkycHblu-6oPwuK/docky/internal/config"
+	"github.com/BkycHblu-6oPwuK/docky/pkg/filetools"
 )
 
 //go:embed files/*
