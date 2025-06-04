@@ -5,11 +5,11 @@ import (
 	"os"
 	"sync"
 
-	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/network"
-	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/secret"
-	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/service"
-	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/volume"
-	"github.com/BkycHblu-6oPwuK/docky/pkg/orderedmap"
+	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile/network"
+	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile/secret"
+	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile/service"
+	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile/volume"
+	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/orderedmap"
 
 	"gopkg.in/yaml.v3"
 )

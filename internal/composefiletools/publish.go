@@ -3,10 +3,10 @@ package composefiletools
 import (
 	"fmt"
 
-	"github.com/BkycHblu-6oPwuK/docky/internal/config"
-	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile"
-	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/service"
-	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/volume"
+	"github.com/BkycHblu-6oPwuK/docky/v2/internal/config"
+	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile"
+	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile/service"
+	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile/volume"
 )
 
 func publishWithBuilder(modifier func(builder *composefile.ComposeFileBuilder) error) error {

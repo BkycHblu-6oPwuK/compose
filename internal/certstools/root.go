@@ -8,10 +8,10 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/BkycHblu-6oPwuK/docky/internal/composefiletools"
-	"github.com/BkycHblu-6oPwuK/docky/internal/config"
-	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile"
-	"github.com/BkycHblu-6oPwuK/docky/pkg/filetools"
+	"github.com/BkycHblu-6oPwuK/docky/v2/internal/composefiletools"
+	"github.com/BkycHblu-6oPwuK/docky/v2/internal/config"
+	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile"
+	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/filetools"
 )
 
 var (

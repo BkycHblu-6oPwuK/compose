@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/BkycHblu-6oPwuK/docky/internal/config"
-	"github.com/BkycHblu-6oPwuK/docky/internal/files"
-	"github.com/BkycHblu-6oPwuK/docky/internal/globaltools"
-	"github.com/BkycHblu-6oPwuK/docky/internal/publishtools"
+	"github.com/BkycHblu-6oPwuK/docky/v2/internal/config"
+	"github.com/BkycHblu-6oPwuK/docky/v2/internal/files"
+	"github.com/BkycHblu-6oPwuK/docky/v2/internal/globaltools"
+	"github.com/BkycHblu-6oPwuK/docky/v2/internal/publishtools"
 
 	"github.com/spf13/cobra"
 )

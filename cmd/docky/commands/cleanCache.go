@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/BkycHblu-6oPwuK/docky/internal/files"
+	"github.com/BkycHblu-6oPwuK/docky/v2/internal/files"
 
 	"github.com/spf13/cobra"
 )

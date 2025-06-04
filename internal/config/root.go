@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/BkycHblu-6oPwuK/docky/pkg/filetools"
+	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/filetools"
 
 	"github.com/joho/godotenv"
 )

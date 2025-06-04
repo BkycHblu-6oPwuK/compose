@@ -12,11 +12,11 @@ import (
 	"strings"
 	"unicode/utf16"
 
-	"github.com/BkycHblu-6oPwuK/docky/internal/certstools"
-	"github.com/BkycHblu-6oPwuK/docky/internal/config"
-	"github.com/BkycHblu-6oPwuK/docky/internal/symlinkstools"
-	"github.com/BkycHblu-6oPwuK/docky/pkg/filetools"
-	"github.com/BkycHblu-6oPwuK/docky/pkg/readertools"
+	"github.com/BkycHblu-6oPwuK/docky/v2/internal/certstools"
+	"github.com/BkycHblu-6oPwuK/docky/v2/internal/config"
+	"github.com/BkycHblu-6oPwuK/docky/v2/internal/symlinkstools"
+	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/filetools"
+	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/readertools"
 )
 
 func PushToLocalHosts(domain string) error {

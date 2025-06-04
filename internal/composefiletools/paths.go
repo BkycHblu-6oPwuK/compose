@@ -1,6 +1,6 @@
 package composefiletools
 
-import "github.com/BkycHblu-6oPwuK/docky/internal/config"
+import "github.com/BkycHblu-6oPwuK/docky/v2/internal/config"
 
 func GetNginxConfPathInContainer() string {
 	return "/etc/nginx/" + ConfDir

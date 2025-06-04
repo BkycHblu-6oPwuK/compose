@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/BkycHblu-6oPwuK/docky/internal/globaltools"
-	"github.com/BkycHblu-6oPwuK/docky/internal/hoststools"
+	"github.com/BkycHblu-6oPwuK/docky/v2/internal/globaltools"
+	"github.com/BkycHblu-6oPwuK/docky/v2/internal/hoststools"
 
 	"github.com/spf13/cobra"
 )

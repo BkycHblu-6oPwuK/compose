@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/BkycHblu-6oPwuK/docky/cmd/docky/commands"
+	"github.com/BkycHblu-6oPwuK/docky/v2/cmd/docky/commands"
 )
 
 func main() {

@@ -1,11 +1,11 @@
 package composefiletools
 
 import (
-	"github.com/BkycHblu-6oPwuK/docky/internal/config"
-	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/service"
-	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/service/build"
-	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/service/dependencies"
-	"github.com/BkycHblu-6oPwuK/docky/pkg/composefile/volume"
+	"github.com/BkycHblu-6oPwuK/docky/v2/internal/config"
+	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile/service"
+	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile/service/build"
+	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile/service/dependencies"
+	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile/volume"
 )
 
 func getBaseBuildBuilder(dockerfile string, args map[string]string) *build.BuildBuilder {

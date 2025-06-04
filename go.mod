@@ -1,4 +1,4 @@
-module github.com/BkycHblu-6oPwuK/docky
+module github.com/BkycHblu-6oPwuK/docky/v2
 
 go 1.24
 
