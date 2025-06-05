@@ -277,6 +277,10 @@ docky hosts push
 ```bash
 docky version
 ```
+- `update` - обновление программы
+```bash
+docky update
+```
 - `init` - Создание docker-compose.yml в текущей директории и создает директорию ```site```
 ```bash
 docky init
