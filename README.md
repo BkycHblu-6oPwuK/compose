@@ -273,9 +273,10 @@ docky hosts push
 
 ## Описание всех доступных команд
 
-- `version` - версия программы
+- `version|v` - версия программы
 ```bash
 docky version
+docky v
 ```
 - `update` - обновление программы
 ```bash
