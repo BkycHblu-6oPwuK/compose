@@ -11,6 +11,7 @@ import (
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/composefiletools"
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/config"
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/config/framework"
+	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/dotenv"
 	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/filetools"
 	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/readertools"
 )
@@ -98,15 +99,28 @@ func InitEnvFile(yamlConfig *config.YamlConfig) error {
 		data = append(data, config.UserGroupVarName+"="+yamlConfig.UserGroup)
 	}
 
+	loadedEnv := dotenv.GetLoadedEnv()
+	skipKeys := map[string]struct{}{
+		config.DockyFrameworkVarName:  {},
+		config.PhpVersionVarName:      {},
+		config.MysqlVersionVarName:    {},
+		config.MariadbVersionVarName:  {},
+		config.PostgresVersionVarName: {},
+		config.NodeVersionVarName:     {},
+		config.NodePathVarName:        {},
+		config.UserGroupVarName:       {},
+	}
+	
+	for key, value := range loadedEnv {
+		if _, skip := skipKeys[key]; skip {
+			continue
+		}
+		data = append(data, key+"="+value)
+	}
+
 	for _, line := range data {
 		if _, err := outFile.WriteString(line + "\n"); err != nil {
 			return err
-		}
-		parts := strings.SplitN(line, "=", 2)
-		if len(parts) == 2 {
-			if err := os.Setenv(parts[0], parts[1]); err != nil {
-				return err
-			}
 		}
 	}
 

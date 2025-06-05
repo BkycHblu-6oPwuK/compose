@@ -13,7 +13,7 @@ import (
 
 const (
 	ScriptName            string = "docky"
-	ScriptVersion         string = "2.2.13"
+	ScriptVersion         string = "2.2.14"
 	SiteDirName           string = "site"
 	DockerFilesDirName    string = "_docker"
 	ConfFilesDirName      string = "_conf"

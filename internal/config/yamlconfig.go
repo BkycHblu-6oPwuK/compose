@@ -6,8 +6,8 @@ import (
 	"sync"
 
 	"github.com/BkycHblu-6oPwuK/docky/v2/internal/config/framework"
+	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/dotenv"
 	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/filetools"
-	"github.com/joho/godotenv"
 )
 
 type YamlConfig struct {
@@ -76,7 +76,7 @@ func GetYamlConfig() *YamlConfig {
 func loadEnvFile() error {
 	envPath := GetEnvFilePath()
 	if fileExists, _ := filetools.FileIsExists(envPath); fileExists {
-		return godotenv.Load(envPath)
+		return dotenv.Load(envPath)
 	}
 	return nil
 }

@@ -10,6 +10,7 @@ import (
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
+	Aliases: []string{"v"},
 	Short: "Версия " + config.ScriptName,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("✅ " + config.ScriptVersion)
