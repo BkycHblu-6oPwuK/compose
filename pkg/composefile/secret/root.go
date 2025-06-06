@@ -1,14 +1,15 @@
 package secret
 
 type Secret struct {
-	File string `yaml:"file,omitempty"`
+	File   string         `yaml:"file,omitempty"`
+	Extras map[string]any `yaml:",inline"`
 }
 
 type SecretBuilder struct {
 	secret Secret
 }
 
-func NewSecretBuilder() *SecretBuilder  {
+func NewSecretBuilder() *SecretBuilder {
 	return &SecretBuilder{
 		secret: Secret{},
 	}

@@ -48,6 +48,7 @@ type Service struct {
 	Profiles        []string                  `yaml:"profiles,omitempty"`
 	Runtime         string                    `yaml:"runtime,omitempty"`
 	ContainerName   string                    `yaml:"container_name,omitempty"`
+	Extras          map[string]any            `yaml:",inline"`
 }
 
 type ServiceBuilder struct {

@@ -1,11 +1,12 @@
 package healthcheck
 
 type HealthCheck struct {
-	Test        []string `yaml:"test,omitempty"`
-	Interval    string   `yaml:"interval,omitempty"`
-	Timeout     string   `yaml:"timeout,omitempty"`
-	Retries     int      `yaml:"retries,omitempty"`
-	StartPeriod string   `yaml:"start_period,omitempty"`
+	Test        []string       `yaml:"test,omitempty"`
+	Interval    string         `yaml:"interval,omitempty"`
+	Timeout     string         `yaml:"timeout,omitempty"`
+	Retries     int            `yaml:"retries,omitempty"`
+	StartPeriod string         `yaml:"start_period,omitempty"`
+	Extras      map[string]any `yaml:",inline"`
 }
 
 type HealthCheckBuilder struct {

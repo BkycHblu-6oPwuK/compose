@@ -4,6 +4,7 @@ type Build struct {
 	Context    string            `yaml:"context,omitempty"`
 	Dockerfile string            `yaml:"dockerfile,omitempty"`
 	Args       map[string]string `yaml:"args,omitempty"`
+	Extras     map[string]any    `yaml:",inline"`
 }
 
 type BuildBuilder struct {
@@ -13,9 +14,9 @@ type BuildBuilder struct {
 func NewBuildBuilder() *BuildBuilder {
 	return &BuildBuilder{
 		build: Build{
-			Context: "",
+			Context:    "",
 			Dockerfile: "",
-			Args: make(map[string]string),
+			Args:       make(map[string]string),
 		},
 	}
 }

@@ -1,7 +1,8 @@
 package network
 
 type Network struct {
-	Driver string `yaml:"driver,omitempty"`
+	Driver string         `yaml:"driver,omitempty"`
+	Extras map[string]any `yaml:",inline"`
 }
 
 const (
@@ -12,7 +13,7 @@ type NetworkBuilder struct {
 	network Network
 }
 
-func NewNetworkBuilder() *NetworkBuilder  {
+func NewNetworkBuilder() *NetworkBuilder {
 	return &NetworkBuilder{
 		network: Network{},
 	}

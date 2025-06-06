@@ -8,7 +8,8 @@ type Dependencies struct {
 }
 
 type DependenciesCondition struct {
-	Condition string `yaml:"condition"`
+	Condition string         `yaml:"condition"`
+	Extras    map[string]any `yaml:",inline"`
 }
 
 func (d *Dependencies) UnmarshalYAML(unmarshal func(any) error) error {

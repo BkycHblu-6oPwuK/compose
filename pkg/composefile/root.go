@@ -19,6 +19,7 @@ type ComposeFile struct {
 	Volumes  map[string]volume.Volume                        `yaml:"volumes,omitempty"`
 	Networks map[string]network.Network                      `yaml:"networks,omitempty"`
 	Secrets  map[string]secret.Secret                        `yaml:"secrets,omitempty"`
+	Extras   map[string]any                                  `yaml:",inline"`
 }
 
 type ComposeFileBuilder struct {

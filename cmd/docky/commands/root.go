@@ -13,7 +13,7 @@ import (
 
 var rootCmd = &cobra.Command{
 	Use:                config.ScriptName + " [docker compose commands]",
-	Short:              "Утилита для работы с docker compose в Bitrix-проектах",
+	Short:              "Утилита для работы с docker compose в php-проектах",
 	DisableFlagParsing: true,
 	Args:               cobra.ArbitraryArgs,
 	Run: func(cmd *cobra.Command, args []string) {

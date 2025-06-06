@@ -1,14 +1,15 @@
 package volume
 
 type Volume struct {
-	Driver string `yaml:"driver,omitempty"`
+	Driver string         `yaml:"driver,omitempty"`
+	Extras map[string]any `yaml:",inline"`
 }
 
 type VolumeBuilder struct {
 	volume Volume
 }
 
-func NewVolumeBuilder() *VolumeBuilder  {
+func NewVolumeBuilder() *VolumeBuilder {
 	return &VolumeBuilder{
 		volume: Volume{},
 	}
