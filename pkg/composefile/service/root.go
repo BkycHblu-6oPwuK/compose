@@ -6,49 +6,49 @@ import (
 	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile/network"
 	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile/service/build"
 	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile/service/dependencies"
-	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile/service/healthcheck"
-	"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile/service/logging"
+	//"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile/service/healthcheck"
+	//"github.com/BkycHblu-6oPwuK/docky/v2/pkg/composefile/service/logging"
 )
 
 type Service struct {
-	Image           string                    `yaml:"image,omitempty"`
-	Build           build.Build               `yaml:"build,omitempty"`
-	Restart         string                    `yaml:"restart,omitempty"`
-	Volumes         []string                  `yaml:"volumes,omitempty"`
-	Ports           []string                  `yaml:"ports,omitempty"`
-	Environment     map[string]string         `yaml:"environment,omitempty"`
-	Dependencies    dependencies.Dependencies `yaml:"depends_on,omitempty"`
-	Networks        []string                  `yaml:"networks,omitempty"`
-	Command         any                       `yaml:"command,omitempty"`
-	ExtraHosts      []string                  `yaml:"extra_hosts,omitempty"`
-	Secrets         []string                  `yaml:"secrets,omitempty"`
-	WorkingDir      string                    `yaml:"working_dir,omitempty"`
-	User            string                    `yaml:"user,omitempty"`
-	Entrypoint      any                       `yaml:"entrypoint,omitempty"`
-	Labels          map[string]string         `yaml:"labels,omitempty"`
-	Healthcheck     healthcheck.HealthCheck   `yaml:"healthcheck,omitempty"`
-	StopGracePeriod string                    `yaml:"stop_grace_period,omitempty"`
-	StopSignal      string                    `yaml:"stop_signal,omitempty"`
-	Tmpfs           []string                  `yaml:"tmpfs,omitempty"`
-	CapAdd          []string                  `yaml:"cap_add,omitempty"`
-	CapDrop         []string                  `yaml:"cap_drop,omitempty"`
-	Sysctls         map[string]string         `yaml:"sysctls,omitempty"`
-	Ulimits         map[string]any            `yaml:"ulimits,omitempty"`
-	Privileged      bool                      `yaml:"privileged,omitempty"`
-	ReadOnly        bool                      `yaml:"read_only,omitempty"`
-	Logging         logging.Logging           `yaml:"logging,omitempty"`
-	Ipc             string                    `yaml:"ipc,omitempty"`
-	Pid             string                    `yaml:"pid,omitempty"`
-	Hostname        string                    `yaml:"hostname,omitempty"`
-	MacAddress      string                    `yaml:"mac_address,omitempty"`
-	Expose          []string                  `yaml:"expose,omitempty"`
-	Devices         []string                  `yaml:"devices,omitempty"`
-	Init            bool                      `yaml:"init,omitempty"`
-	Platform        string                    `yaml:"platform,omitempty"`
-	Profiles        []string                  `yaml:"profiles,omitempty"`
-	Runtime         string                    `yaml:"runtime,omitempty"`
-	ContainerName   string                    `yaml:"container_name,omitempty"`
-	Extras          map[string]any            `yaml:",inline"`
+	Image         string                    `yaml:"image,omitempty"`
+	Build         build.Build               `yaml:"build,omitempty"`
+	Restart       string                    `yaml:"restart,omitempty"`
+	Volumes       []string                  `yaml:"volumes,omitempty"`
+	Ports         []string                  `yaml:"ports,omitempty"`
+	Environment   map[string]string         `yaml:"environment,omitempty"`
+	Dependencies  dependencies.Dependencies `yaml:"depends_on,omitempty"`
+	Networks      []string                  `yaml:"networks,omitempty"`
+	Command       any                       `yaml:"command,omitempty"`
+	ExtraHosts    []string                  `yaml:"extra_hosts,omitempty"`
+	Secrets       []string                  `yaml:"secrets,omitempty"`
+	WorkingDir    string                    `yaml:"working_dir,omitempty"`
+	ContainerName string                    `yaml:"container_name,omitempty"`
+	//User            string                    `yaml:"user,omitempty"`
+	//Entrypoint      any                       `yaml:"entrypoint,omitempty"`
+	//Labels          map[string]string         `yaml:"labels,omitempty"`
+	//Healthcheck     healthcheck.HealthCheck   `yaml:"healthcheck,omitempty"`
+	//StopGracePeriod string                    `yaml:"stop_grace_period,omitempty"`
+	//StopSignal      string                    `yaml:"stop_signal,omitempty"`
+	//Tmpfs           []string                  `yaml:"tmpfs,omitempty"`
+	//CapAdd          []string                  `yaml:"cap_add,omitempty"`
+	//CapDrop         []string                  `yaml:"cap_drop,omitempty"`
+	//Sysctls         map[string]string         `yaml:"sysctls,omitempty"`
+	//Ulimits         map[string]any            `yaml:"ulimits,omitempty"`
+	//Privileged      bool                      `yaml:"privileged,omitempty"`
+	//ReadOnly        bool                      `yaml:"read_only,omitempty"`
+	//Logging         logging.Logging           `yaml:"logging,omitempty"`
+	//Ipc             string                    `yaml:"ipc,omitempty"`
+	//Pid             string                    `yaml:"pid,omitempty"`
+	//Hostname        string                    `yaml:"hostname,omitempty"`
+	//MacAddress      string                    `yaml:"mac_address,omitempty"`
+	//Expose          []string                  `yaml:"expose,omitempty"`
+	//Devices         []string                  `yaml:"devices,omitempty"`
+	//Init            bool                      `yaml:"init,omitempty"`
+	//Platform        string                    `yaml:"platform,omitempty"`
+	//Profiles        []string                  `yaml:"profiles,omitempty"`
+	//Runtime         string                    `yaml:"runtime,omitempty"`
+	Extras map[string]any `yaml:",inline"`
 }
 
 type ServiceBuilder struct {
@@ -56,7 +56,7 @@ type ServiceBuilder struct {
 	volumeSet           map[string]struct{}
 	dependenciesBuilder *dependencies.DependenciesBuilder
 	buildBuilder        *build.BuildBuilder
-	healthBuilder       *healthcheck.HealthCheckBuilder
+	//healthBuilder       *healthcheck.HealthCheckBuilder
 }
 
 func NewServiceBuilder() *ServiceBuilder {
@@ -225,10 +225,10 @@ func (b *ServiceBuilder) WithBuildBuilder(builder *build.BuildBuilder) *ServiceB
 	return b
 }
 
-func (b *ServiceBuilder) WithHealthcheckBuilder(builder *healthcheck.HealthCheckBuilder) *ServiceBuilder {
-	b.healthBuilder = builder
-	return b
-}
+// func (b *ServiceBuilder) WithHealthcheckBuilder(builder *healthcheck.HealthCheckBuilder) *ServiceBuilder {
+// 	b.healthBuilder = builder
+// 	return b
+// }
 
 func (b *ServiceBuilder) Build() Service {
 	if b.dependenciesBuilder != nil {
@@ -237,9 +237,9 @@ func (b *ServiceBuilder) Build() Service {
 	if b.buildBuilder != nil {
 		b.service.Build = b.buildBuilder.Build()
 	}
-	if b.healthBuilder != nil {
-		b.service.Healthcheck = b.healthBuilder.Build()
-	}
+	// if b.healthBuilder != nil {
+	// 	b.service.Healthcheck = b.healthBuilder.Build()
+	// }
 	b.volumeSet = nil
 	return b.service
 }

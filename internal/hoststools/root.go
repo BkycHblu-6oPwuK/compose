@@ -95,8 +95,8 @@ func PushToHosts() error {
 	return nil
 }
 
-func CreateDomain() error {
-	domain, err := prepareDomain()
+func CreateDomain(domain string) error {
+	domain, err := prepareDomain(domain)
 	if err != nil {
 		return err
 	}
@@ -108,8 +108,8 @@ func CreateDomain() error {
 	return PushToHosts()
 }
 
-func CreateSite() error {
-	domain, err := prepareDomain()
+func CreateSite(domain string) error {
+	domain, err := prepareDomain(domain)
 	if err != nil {
 		return err
 	}
@@ -138,8 +138,10 @@ func pushTosymlinks(domain string) error {
 	})
 }
 
-func prepareDomain() (string, error) {
-	domain := readDomain()
+func prepareDomain(domain string) (string, error) {
+	if domain == "" {
+		domain = readDomain()
+	}
 	if err := PushToLocalHosts(domain); err != nil {
 		return "", err
 	}

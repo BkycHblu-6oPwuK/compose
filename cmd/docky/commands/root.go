@@ -31,7 +31,7 @@ var rootCmd = &cobra.Command{
 func init() {
 	err := files.ExtractFilesInCache()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
+		panic("Ошибка при переносе файлов в кеш-директорию")
 	}
 }
 

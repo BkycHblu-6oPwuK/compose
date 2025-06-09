@@ -15,6 +15,7 @@ import (
 var shareCmd = &cobra.Command{
 	Use:                "share",
 	Short:              "Туннелирование локального сайта",
+	Long:               "Туннелирование происходит с помощью Expose и вы можете прокидывать все флаги что принимает Expose",
 	DisableFlagParsing: true,
 	Run: func(cmd *cobra.Command, args []string) {
 		globaltools.ValidateWorkDir()

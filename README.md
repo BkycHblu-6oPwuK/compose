@@ -16,11 +16,11 @@
 ```bash
 curl -sSL https://raw.githubusercontent.com/BkycHblu-6oPwuK/docky/main/scripts/install.sh | sudo sh
 ```
-Либо же можете вручую скачать бинарник (находится в build/docky) и поместить его в ```/usr/local/bin``` и не забудьте дать ему необходимые права (команда ```chmod +x```)
+Либо же можете вручую скачать бинарник (находится в bin/docky) и поместить его в ```/usr/local/bin``` и не забудьте дать ему необходимые права (команда ```chmod +x```)
 
 Обновление скрипта происходит точно также, при выполнении команды curl - файл заменяется.
 
-После установки проверьте работу скрипта, можете выполнить команду ```docky --help```
+После установки проверьте работу скрипта, можете выполнить команду ```docky```
 
 ## Публикация docker-compose.yml
 
@@ -33,15 +33,16 @@ docky init
 ```
 
 Если docker-compose.yml уже существует, то будет предложено создать новый - в таком случае файл будет переименован и после этого вы перейдете к дальшейшей публикации нового файла, а иначе будет произведен выход.
-Сам сайт размещается в директории ```site```, которая создается в той же директории где находиться docker-compose.yml
+Сам проект размещается в директории ```site```, которая создается в той же директории где находиться docker-compose.yml
 
 ## Конфигурация yml через файл .env
 
-В этом файле задается версия php, mysql, node, путь к package json и путь к сайту если необходимо заменить стандартный
+Файл автоматически создается при инициализации проекта. В него вы так же можете добавлять свои переменные и менять стандартные
 
 ```
 PHP_VERSION=7.4|8.2|8.3|8.4 # по сути не фактическая версия php - используется для построения пути к dockerfile в ```_docker/app/php-{PHP_VERSION}/dockerfile```, в самом докерфайле задается фактическая версия
 MYSQL_VERSION={любая версия доступная на docker hub}
+MARIADB_VERSION={любая версия доступная на docker hub}
 POSTGRES_VERSION={любая версия доступная на docker hub}
 NODE_VERSION={любая версия доступная по ссылке - https://deb.nodesource.com/setup_${NODE_VERSION}.x}
 NODE_PATH=/var/www/local/js/vite # здесь путь до package json в контейнере, поэтому указывайте вместе абсолютный путь. /var/www - это DOCUMENT_ROOT сайта в контейнере
@@ -93,7 +94,7 @@ docky publish --dockerfile app|nginx|node
 docky publish --service node|mysql|mariadb|postgres|sphinx|redis|memcached|mailhog|phpmyadmin
 ```
 
-## SSL сертификаты для nginx
+## nginx
 
 Сертификаты и ключи копируются в контейнер из /_docker/nginx/certs/ и запись о них уже добавлена в nginx.conf.
 
@@ -117,6 +118,8 @@ docky publish --service node|mysql|mariadb|postgres|sphinx|redis|memcached|mailh
 ```
 - ${CONF_PATH}/nginx/site.conf:/etc/nginx/conf.d/site.conf
 ```
+
+для работы сокетов на локальном сайте в php контейнере так же устанавливается nginx который проксирует запросы на основной контейнер с nginx.
 
 ## php
 
@@ -146,20 +149,6 @@ docky publish --file xdebug.ini
 
 файл будет помещен в - ``` ${CONF_PATH}/app/php-{PHP_VERSION}/xdebug.ini ```
 
-## Nginx в php контейнере
-
-Для работы с сокетами в php кентейнер был установлен nginx который проксирует запросы на контейнер nginx.
-
-nginx.conf для контейнера php лежит в ${DOCKER_PATH}/app/nginx.conf
-
-## Mysql
-
-Версия mysql меняется в файле .env, переменная ```MYSQL_VERSION```, версия любая доступная на docker hub для образа mysql
-
-По умолчанию база данных храниться в томе (volumes) mysql_data, если хотите хранить базу локально в директории, то замените mysql_data на вашу директорию, например - ./tmp/db
-
-Так же в сервис прокидывается файл конфигурации my.cnf, он располагается в ${DOCKER_PATH}/mysql/my.cnf - туда вы можете вносить свои правки.
-
 ## Node и npm, npx
 
 По умолчанию установлена 23 версия.
@@ -176,6 +165,21 @@ nginx.conf для контейнера php лежит в ${DOCKER_PATH}/app/ngin
 ```bash
 docky npm {arg}
 docky npx {arg}
+```
+
+для работы сервера разработки vite обавьте это в vite.config.js
+```js
+    server: {
+        host: '0.0.0.0',
+        port: 5173,
+        open: false,
+        cors: {
+            origin: '*'
+        },
+        hmr: {
+            host: 'localhost',
+        },
+    }
 ```
 
 ## Пакет pm2 в node контейнере
@@ -201,7 +205,7 @@ docky share
 
 Сайт будет доступен 1 час, после этого команду можно выполнить заново.
 
-доступные флаги expose для проброса через команду docky share:
+привер флагов expose для проброса через команду docky share:
 
 - `--auth`
 - `--server`
@@ -209,6 +213,7 @@ docky share
 - `--domain`
 - `--server-host`
 - `--server-port`
+- ...
 
 Документация expose - https://expose.dev/docs/introduction
 
@@ -236,13 +241,13 @@ docky publish --file symlinks
 ## Создание нового домена для основного сайта
 
 0. Выполните команду ```docky down``` или убедитесь что контейнеры остановлены
-1. Для создания выполните команду ``` docky create domain ```
+1. Для создания выполните команду ``` docky create domain ``` или ``` docky create domain --name {domain_name} ```
 2. Введите доменное имя сайта
 3. Выполните команду ``` docky build ```
 
 ## Добавление записей в hosts 
 
-При домена создается файл hosts в ``` ${CONF_PATH}/hosts ```
+При создании домена создается файл hosts в ``` ${CONF_PATH}/hosts ```
 А так же необходимые конфиги для nginx и сертификаты для этого домена в 
 - ${CONF_PATH}/app/nginx/${domain}.conf
 - ${CONF_PATH}/nginx/conf.d/${domain}.conf
@@ -300,10 +305,12 @@ docky clean-cache
 - `create site` - Создание нового сайта в директории сайта (./site/new-site.ru) для фреймворка bitrix
 ```bash
 docky create site
+docky create site --name {domain_name}
 ```
 - `create domain` - Создание нового домена для вашего основного сайта
 ```bash
 docky create domain
+docky create domain --name {domain_name}
 ```
 - `hosts push` - Переносит записи из вашего локального hosts файла в глобальный
 ```bash

@@ -54,24 +54,3 @@ msmtp клиент не устанавливается.
 - port=1025
 
 панель доступна на - localhost:8025
-
-## Vite config 
-
-используйте команды ```docky npm``` чтобы запускать npm команды в контейнере
-
-и добавьте настройки сервера в vite.config.js 
-
-```
-    server: {
-        host: '0.0.0.0',
-        port: 5173,
-        open: false,
-        cors: {
-            origin: '*'
-        },
-        hmr: {
-            host: 'localhost',
-        },
-    }
-```
-

@@ -22,7 +22,7 @@ var createSiteModuleCmd = &cobra.Command{
 	Short: "Создает новый сайт (директория, сертификаты, запись в hosts)",
 	Run: func(cmd *cobra.Command, args []string) {
 		globaltools.ValidateWorkDir()
-		err := hoststools.CreateSite()
+		err := hoststools.CreateSite(createDomainNameFlag)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
 			return
@@ -35,17 +35,21 @@ var createDomainModuleCmd = &cobra.Command{
 	Use:   "domain",
 	Short: "Создает новый домен (сертификаты, запись в hosts)",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := hoststools.CreateDomain()
+		globaltools.ValidateWorkDir()
+		err := hoststools.CreateDomain(createDomainNameFlag)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "❌ Ошибка: %v\n", err)
 		}
 		fmt.Println("✅ домен создан!")
 	},
 }
+var createDomainNameFlag string
 
 func init() {
+	createDomainModuleCmd.Flags().StringVar(&createDomainNameFlag, "name", "", "Задать имя домена")
 	switch config.GetCurFramework() {
 	case framework.Bitrix:
+		createSiteModuleCmd.Flags().StringVar(&createDomainNameFlag, "name", "", "Задать имя домена")
 		createCmd.AddCommand(createSiteModuleCmd)
 	}
 	createCmd.AddCommand(createDomainModuleCmd)

@@ -1,9 +1,5 @@
 package commands
 
-/**
-* @todo отрефакторить сброс, с флагом --all вообще сбрасывать всё, что можно, по умолчанию оставлять кастомизацию. Перенести сброс в пакет docky/yaml
- */
-
 import (
 	"fmt"
 	"os"
@@ -26,6 +22,7 @@ import (
 var upgradeCmd = &cobra.Command{
 	Use:   "reset",
 	Short: "Сбрасывает docker-compose.yml под актуальный формат",
+	Deprecated: "Будет удалена 01.09.2025",
 	Run: func(cmd *cobra.Command, args []string) {
 		globaltools.ValidateWorkDir()
 		err := reset()

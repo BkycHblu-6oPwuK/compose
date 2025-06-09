@@ -19,7 +19,7 @@ func InitDockerComposeFile() error {
 	}
 
 	yamlConfig := config.GetYamlConfig()
-	yamlConfig.FrameworkName = framework.ParseFramework(readertools.GetOrChoose("Ваш фреймворк: ", yamlConfig.FrameworkName.String(), framework.GetAllStrings()))
+	yamlConfig.FrameworkName = framework.ParseFramework(readertools.GetOrChoose("Ваш фреймворк: ", "", framework.GetAllStrings()))
 	yamlConfig.PhpVersion = readertools.GetOrChoose("Выберите версию php: ", "", composefiletools.GetAvailableVersions(composefiletools.App, yamlConfig))
 
 	switch yamlConfig.FrameworkName {
